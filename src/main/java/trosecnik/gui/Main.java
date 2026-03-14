@@ -10,7 +10,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-
+    private trosecnik.engine.SaveLoadManager saveLoadManager;
+    private trosecnik.engine.TimeThread timeThread;
+    private trosecnik.engine.GameMap gameMap;
     @Override
     public void start(Stage primaryStage) {
 
