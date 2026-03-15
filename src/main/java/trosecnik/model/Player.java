@@ -30,16 +30,32 @@ public class Player extends Entity {
         if (gameMap != null && gameMap.isWalkable(newX, newY)) {
             this.x = newX;
             this.y = newY;
-            System.out.println(name + " udělal krok na [" + x + ", " + y + "]");
-            // TODO: Logika pro odečítání hladu při pohybu (přidáme později)
+            System.out.println(name + "krok na [" + x + ", " + y + "]");
+            decreaseHunger(1);
         } else {
-            System.out.println("BUM! " + name + " narazil do překážky na [" + newX + ", " + newY + "]");
+            System.out.println(" " + name + " narazil do překážky na [" + newX + ", " + newY + "]");
         }
     }
 
     @Override
     public void interact() {
         // TODO: Musim dodělat
+    }
+    public void decreaseHunger(int amount) {
+        if (this.hunger > 0) {
+            this.hunger -= amount;
+            if (this.hunger < 0) {
+                this.hunger = 0;
+            }
+        } else {
+            this.health -= 5;
+            System.out.println("Životy klesly na: " + this.health);
+
+            if (this.health <= 0) {
+                this.health = 0;
+                System.out.println("konecna");
+            }
+        }
     }
 
     public int getHealth() { return health; }

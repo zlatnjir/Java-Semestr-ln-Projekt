@@ -65,7 +65,7 @@ public class Main extends Application {
             drawGame(gc);
         });
 
-        primaryStage.setTitle("Trosečník Engine - Hýbeme se!");
+        primaryStage.setTitle("Trosecnik");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
@@ -93,6 +93,19 @@ public class Main extends Application {
 
         gc.setFill(Color.RED);
         gc.fillOval(player.getX() * TILE_SIZE, player.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+        gc.setFill(Color.WHITE);
+        gc.setFont(javafx.scene.text.Font.font("Arial", 24));
+
+        gc.fillText("Životy: " + player.getHealth(), 20, 35);
+
+
+        if (player.getHunger() > 30) {
+            gc.setFill(Color.WHITE);
+        } else {
+            gc.setFill(Color.ORANGE);
+        }
+        gc.fillText("Hlad: " + player.getHunger(), 20, 65);
     }
 
     public static void main(String[] args) {
