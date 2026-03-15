@@ -69,6 +69,8 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+        timeThread = new TimeThread(player, () -> drawGame(gc));
+        timeThread.start();
     }
 
     private void drawGame(GraphicsContext gc) {
@@ -107,7 +109,13 @@ public class Main extends Application {
         }
         gc.fillText("Hlad: " + player.getHunger(), 20, 65);
     }
-
+    @Override
+    public void stop() {
+        if (timeThread != null) {
+            timeThread.stopTime();
+            System.out.println("ende");
+        }
+    }
     public static void main(String[] args) {
         launch(args);
     }
