@@ -1,32 +1,48 @@
 package trosecnik.model;
 
+import trosecnik.engine.GameMap;
+import trosecnik.inventory.CraftingSystem;
 import trosecnik.inventory.Inventory;
 
 
 public class Player extends Entity {
-    private trosecnik.inventory.CraftingSystem craftingSystem;
-    private trosecnik.engine.GameMap gameMap;
 
     private int health = 100;
     private int hunger = 100;
-    private Inventory inventory;
 
-    public Player(String name) {
+    private Inventory inventory;
+    private CraftingSystem craftingSystem;
+    private GameMap gameMap;
+
+    public Player(String name, int startX, int startY, GameMap map) {
         this.name = name;
+        this.x = startX;
+        this.y = startY;
+        this.gameMap = map;
         this.inventory = new Inventory();
+        this.craftingSystem = new CraftingSystem();
     }
 
     public void move(int dx, int dy) {
-        this.x += dx;
-        this.y += dy;
-        // TODO: odečítání hladu při pohybu hápek
+        int newX = this.x + dx;
+        int newY = this.y + dy;
+
+        if (gameMap != null && gameMap.isWalkable(newX, newY)) {
+            this.x = newX;
+            this.y = newY;
+            System.out.println(name + " udělal krok na [" + x + ", " + y + "]");
+            // TODO: Logika pro odečítání hladu při pohybu (přidáme později)
+        } else {
+            System.out.println("BUM! " + name + " narazil do překážky na [" + newX + ", " + newY + "]");
+        }
     }
 
     @Override
     public void interact() {
-        // TODO: Ztráta hp když s něčím hráč interaguhje
+        // TODO: Musim dodělat
     }
 
     public int getHealth() { return health; }
     public int getHunger() { return hunger; }
+    public Inventory getInventory() { return inventory; }
 }
