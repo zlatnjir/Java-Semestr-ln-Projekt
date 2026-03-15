@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -23,10 +24,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-
         saveLoadManager = new SaveLoadManager();
         gameMap = saveLoadManager.loadLevel("/trosecnik/levels/level1.txt");
-
 
         if (gameMap != null) {
             player = new Player("Trosečník", 2, 1, gameMap);
@@ -43,18 +42,39 @@ public class Main extends Application {
         StackPane root = new StackPane(canvas);
         Scene scene = new Scene(root);
 
-        primaryStage.setTitle("1.Ostruev");
+
+        scene.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case W:
+                case UP:
+                    player.move(0, -1);
+                    break;
+                case S:
+                case DOWN:
+                    player.move(0, 1);
+                    break;
+                case A:
+                case LEFT:
+                    player.move(-1, 0);
+                    break;
+                case D:
+                case RIGHT:
+                    player.move(1, 0);
+                    break;
+            }
+            drawGame(gc);
+        });
+
+        primaryStage.setTitle("Trosečník Engine - Hýbeme se!");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
-
     private void drawGame(GraphicsContext gc) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 10; x++) {
                 char tile = gameMap.getTile(x, y);
-
 
                 if (tile == '~') {
                     gc.setFill(Color.BLUE);
@@ -67,8 +87,6 @@ public class Main extends Application {
                 } else {
                     gc.setFill(Color.BLACK);
                 }
-
-
                 gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             }
         }
