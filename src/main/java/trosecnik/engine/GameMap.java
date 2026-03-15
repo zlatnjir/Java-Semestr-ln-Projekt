@@ -26,6 +26,13 @@ public class GameMap {
         return tile == '.';
     }
 
+    public char getTile(int x, int y) {
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            return tiles[y][x];
+        }
+        return ' ';
+    }
+
     public void printMap() {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
