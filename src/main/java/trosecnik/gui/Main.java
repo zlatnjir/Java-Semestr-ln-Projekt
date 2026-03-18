@@ -61,6 +61,9 @@ public class Main extends Application {
                 case RIGHT:
                     player.move(1, 0);
                     break;
+                case E:
+                    player.interact();
+                    break;
             }
             drawGame(gc);
         });
@@ -80,16 +83,27 @@ public class Main extends Application {
 
                 if (tile == '~') {
                     gc.setFill(Color.BLUE);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 } else if (tile == '.') {
                     gc.setFill(Color.LIGHTGREEN);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 } else if (tile == 'T') {
                     gc.setFill(Color.DARKGREEN);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 } else if (tile == 'R') {
                     gc.setFill(Color.GRAY);
-                } else {
-                    gc.setFill(Color.BLACK);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                } else if (tile == 'k') {
+                    gc.setFill(Color.LIGHTGREEN);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    gc.setFill(Color.DARKGRAY);
+                    gc.fillOval(x * TILE_SIZE + 20, y * TILE_SIZE + 20, 40, 40); // Menší šedý kruh
+                } else if (tile == 'v') {
+                    gc.setFill(Color.LIGHTGREEN);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    gc.setFill(Color.SADDLEBROWN);
+                    gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60); // Hnědý obdélníček
                 }
-                gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             }
         }
 

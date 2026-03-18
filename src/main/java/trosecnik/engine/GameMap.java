@@ -23,7 +23,7 @@ public class GameMap {
         if (x < 0 || x >= width || y < 0 || y >= height) return false;
 
         char tile = tiles[y][x];
-        return tile == '.';
+        return tile == '.' || tile == 'k' || tile == 'v';
     }
 
     public char getTile(int x, int y) {

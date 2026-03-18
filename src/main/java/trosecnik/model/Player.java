@@ -39,7 +39,20 @@ public class Player extends Entity {
 
     @Override
     public void interact() {
-        // TODO: Musim dodělat
+        char currentTile = gameMap.getTile(x, y);
+
+        if (currentTile == 'k') {
+            inventory.addItem(new trosecnik.inventory.Item("Kámen", "Surovina"));
+            gameMap.setTile(x, y, '.');
+            System.out.println("Sebral Kamen");
+
+        } else if (currentTile == 'v') {
+            inventory.addItem(new trosecnik.inventory.Item("Větve", "Surovina"));
+            gameMap.setTile(x, y, '.');
+            System.out.println("Sebral Vetve");
+        } else {
+            System.out.println("Tady na zemi nic zajímavého není.");
+        }
     }
     public void decreaseHunger(int amount) {
         if (this.hunger > 0) {
