@@ -1,9 +1,12 @@
 package trosecnik.engine;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GameMap {
     private int width;
     private int height;
     private char[][] tiles;
+    private Map<String, Integer> treeHealth = new HashMap<>();
 
     public GameMap(int width, int height) {
         this.width = width;
@@ -39,6 +42,25 @@ public class GameMap {
                 System.out.print(tiles[y][x]);
             }
             System.out.println();
+        }
+    }
+
+    public boolean chopTree(int x, int y) {
+
+        String key = x + "," + y;
+
+
+        int health = treeHealth.getOrDefault(key, 3);
+        health--;
+
+        if (health <= 0) {
+            setTile(x, y, '.');
+            treeHealth.remove(key);
+            return true;
+        } else {
+            treeHealth.put(key, health);
+            System.out.println("jeste zbyva [" + key + "]: " + health);
+            return false;
         }
     }
 }

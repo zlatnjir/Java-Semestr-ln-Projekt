@@ -51,8 +51,30 @@ public class Player extends Entity {
             gameMap.setTile(x, y, '.');
             System.out.println("Sebral Vetve");
         } else {
-            System.out.println("Tady na zemi nic zajímavého není.");
+            if (inventory.hasItemByName("Sekera")) {
+                if (tryChop(x, y - 1)) return;
+                if (tryChop(x, y + 1)) return;
+                if (tryChop(x - 1, y)) return;
+                if (tryChop(x + 1, y)) return;
+
+                System.out.println("neni strom");
+            } else {
+                System.out.println("tady nic");
+            }
         }
+    }
+    private boolean tryChop(int targetX, int targetY) {
+        if (gameMap.getTile(targetX, targetY) == 'T') {
+            System.out.println("CHOPAAAAAAAAAAAAAAA!");
+            boolean destroyed = gameMap.chopTree(targetX, targetY);
+
+            if (destroyed) {
+                System.out.println("sundal si strom wp");
+                inventory.addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
+            }
+            return true;
+        }
+        return false;
     }
     public void decreaseHunger(int amount) {
         if (this.hunger > 0) {
