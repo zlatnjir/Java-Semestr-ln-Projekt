@@ -8,9 +8,23 @@ public class Inventory {
 
     public Inventory() {
         this.items = new ArrayList<>();
+
+    }
+    public boolean hasItemByName(String name) {
+        for (Item item : items) {
+            if (item.getName().equals(name)) return true;
+        }
+        return false;
     }
 
-
+    public void removeItemByName(String name) {
+        for (int i = 0; i < items.size(); i++) {
+            if (items.get(i).getName().equals(name)) {
+                items.remove(i);
+                break;
+            }
+        }
+    }
     public void addItem(Item item) {
         if (item != null) {
             items.add(item);
@@ -33,4 +47,5 @@ public class Inventory {
 
         return items;
     }
+
 }

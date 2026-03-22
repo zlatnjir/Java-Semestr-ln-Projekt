@@ -70,7 +70,7 @@ public class Player extends Entity {
             }
         }
     }
-
+    public CraftingSystem getCraftingSystem() { return craftingSystem; }
     public int getHealth() { return health; }
     public int getHunger() { return hunger; }
     public Inventory getInventory() { return inventory; }

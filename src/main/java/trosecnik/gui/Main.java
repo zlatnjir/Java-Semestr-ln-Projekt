@@ -52,6 +52,15 @@ public class Main extends Application {
             }
 
             if (showInventory) {
+                if (event.getCode() == javafx.scene.input.KeyCode.F) {
+                    boolean success = player.getCraftingSystem().craftAxe(player.getInventory());
+                    if (success) {
+                        System.out.println("Úspěšně jsi vyrobil Sekeru!");
+                    } else {
+                        System.out.println("Nemáš dost surovin na Sekeru (Kámen + Větve).");
+                    }
+                    drawGame(gc);
+                }
                 return;
             }
             switch (event.getCode()) {
@@ -139,6 +148,8 @@ public class Main extends Application {
 
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
             gc.fillRect(100, 50, 600, 220);
+            // Nápověda pro crafting vespod batohu
+
 
             gc.setFill(Color.WHITE);
             gc.setFont(javafx.scene.text.Font.font("Arial", 28));
@@ -147,6 +158,8 @@ public class Main extends Application {
             java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
 
             gc.setFont(javafx.scene.text.Font.font("Arial", 20));
+            gc.setFill(Color.YELLOW);
+            gc.fillText("[F] Vyrobit Sekeru (Kámen + Větve)", 120, 240);
             if (items.isEmpty()) {
                 gc.fillText("Batoh je prázdný.", 120, 140);
             } else {

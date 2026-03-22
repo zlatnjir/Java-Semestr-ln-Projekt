@@ -1,10 +1,15 @@
 package trosecnik.inventory;
 
-
 public class CraftingSystem {
 
-    public Item craft(Item item1, Item item2) {
-        // TODO: Logika crafrtingu
-        return null;
+
+    public boolean craftAxe(Inventory inv) {
+        if (inv.hasItemByName("Kámen") && inv.hasItemByName("Větve")) {
+            inv.removeItemByName("Kámen");
+            inv.removeItemByName("Větve");
+            inv.addItem(new Item("Sekera", "Nástroj"));
+            return true;
+        }
+        return false;
     }
 }
