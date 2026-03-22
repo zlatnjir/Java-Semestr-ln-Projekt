@@ -21,6 +21,7 @@ public class Main extends Application {
     private Player player;
     private SaveLoadManager saveLoadManager;
     private TimeThread timeThread;
+    private boolean showInventory = false;
 
     @Override
     public void start(Stage primaryStage) {
@@ -44,6 +45,15 @@ public class Main extends Application {
 
 
         scene.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.C) {
+                showInventory = !showInventory;
+                drawGame(gc);
+                return;
+            }
+
+            if (showInventory) {
+                return;
+            }
             switch (event.getCode()) {
                 case W:
                 case UP:
@@ -67,6 +77,7 @@ public class Main extends Application {
             }
             drawGame(gc);
         });
+
 
         primaryStage.setTitle("Trosecnik");
         primaryStage.setScene(scene);
@@ -104,6 +115,7 @@ public class Main extends Application {
                     gc.setFill(Color.SADDLEBROWN);
                     gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60); // Hnědý obdélníček
                 }
+
             }
         }
 
@@ -122,6 +134,29 @@ public class Main extends Application {
             gc.setFill(Color.ORANGE);
         }
         gc.fillText("Hlad: " + player.getHunger(), 20, 65);
+
+        if (showInventory) {
+
+            gc.setFill(Color.rgb(0, 0, 0, 0.7));
+            gc.fillRect(100, 50, 600, 220);
+
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 28));
+            gc.fillText("--- INVENTÁŘ ---", 120, 90);
+
+            java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+
+            gc.setFont(javafx.scene.text.Font.font("Arial", 20));
+            if (items.isEmpty()) {
+                gc.fillText("Batoh je prázdný.", 120, 140);
+            } else {
+                int yOffset = 140;
+                for (trosecnik.inventory.Item item : items) {
+                    gc.fillText("- " + item.getName() + " (" + item.getType() + ")", 120, yOffset);
+                    yOffset += 30;
+                }
+            }
+        }
     }
     @Override
     public void stop() {
