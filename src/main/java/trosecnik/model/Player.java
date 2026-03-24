@@ -51,15 +51,22 @@ public class Player extends Entity {
             gameMap.setTile(x, y, '.');
             System.out.println("Sebral Vetve");
         } else {
-            if (inventory.hasItemByName("Sekera")) {
-                if (tryChop(x, y - 1)) return;
-                if (tryChop(x, y + 1)) return;
-                if (tryChop(x - 1, y)) return;
-                if (tryChop(x + 1, y)) return;
+            boolean actionDone = false;
 
-                System.out.println("neni strom");
-            } else {
-                System.out.println("tady nic");
+            if (inventory.hasItemByName("Sekera")) {
+                if (tryChop(x, y - 1) || tryChop(x, y + 1) || tryChop(x - 1, y) || tryChop(x + 1, y)) {
+                    actionDone = true;
+                }
+            }
+
+            if (!actionDone && inventory.hasItemByName("Oštěp")) {
+                if (tryHunt(x, y - 1) || tryHunt(x, y + 1) || tryHunt(x - 1, y) || tryHunt(x + 1, y)) {
+                    actionDone = true;
+                }
+            }
+
+            if (!actionDone) {
+                System.out.println("pod dubem za dubem nic neni test3");
             }
         }
     }
@@ -72,6 +79,16 @@ public class Player extends Entity {
                 System.out.println("sundal si strom wp");
                 inventory.addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
             }
+            return true;
+        }
+        return false;
+    }
+    private boolean tryHunt(int targetX, int targetY) {
+        if (gameMap.getTile(targetX, targetY) == 'p') {
+            System.out.println("BOD! (Útočíš na prase...)");
+            gameMap.setTile(targetX, targetY, '.'); // Prase z mapy zmizí po jedné ráně
+            inventory.addItem(new trosecnik.inventory.Item("Syrové maso", "Jídlo"));
+            System.out.println("Úspěšný lov! Získal jsi Syrové maso!");
             return true;
         }
         return false;

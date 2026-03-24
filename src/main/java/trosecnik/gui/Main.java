@@ -61,6 +61,15 @@ public class Main extends Application {
                     }
                     drawGame(gc);
                 }
+                if (event.getCode() == javafx.scene.input.KeyCode.G) {
+                    boolean success = player.getCraftingSystem().craftSpear(player.getInventory());
+                    if (success) {
+                        System.out.println("Úspěšně jsi vyrobil Oštěp!");
+                    } else {
+                        System.out.println("Nemáš dost surovin na Oštěp (Dřevo + Kámen).");
+                    }
+                    drawGame(gc);
+                }
                 return;
             }
             switch (event.getCode()) {
@@ -124,6 +133,13 @@ public class Main extends Application {
                     gc.setFill(Color.SADDLEBROWN);
                     gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60); // Hnědý obdélníček
                 }
+                else if (tile == 'p') {
+                    gc.setFill(Color.LIGHTGREEN);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    gc.setFill(Color.PINK);
+                    gc.fillRoundRect(x * TILE_SIZE + 10, y * TILE_SIZE + 20, 60, 40, 15, 15);
+                }
+
 
             }
         }
@@ -137,6 +153,7 @@ public class Main extends Application {
         gc.fillText("Životy: " + player.getHealth(), 20, 35);
 
 
+
         if (player.getHunger() > 30) {
             gc.setFill(Color.WHITE);
         } else {
@@ -148,7 +165,6 @@ public class Main extends Application {
 
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
             gc.fillRect(100, 50, 600, 220);
-            // Nápověda pro crafting vespod batohu
 
 
             gc.setFill(Color.WHITE);
@@ -160,6 +176,7 @@ public class Main extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 20));
             gc.setFill(Color.YELLOW);
             gc.fillText("[F] Vyrobit Sekeru (Kámen + Větve)", 120, 240);
+            gc.fillText("[G] Vyrobit Oštěp (Dřevo + Kámen)", 120, 270);
             if (items.isEmpty()) {
                 gc.fillText("Batoh je prázdný.", 120, 140);
             } else {

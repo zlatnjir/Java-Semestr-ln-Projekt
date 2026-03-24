@@ -12,4 +12,13 @@ public class CraftingSystem {
         }
         return false;
     }
+    public boolean craftSpear(Inventory inv) {
+        if (inv.hasItemByName("Dřevo") && inv.hasItemByName("Kámen")) {
+            inv.removeItemByName("Dřevo");
+            inv.removeItemByName("Kámen");
+            inv.addItem(new Item("Oštěp", "Nástroj"));
+            return true;
+        }
+        return false;
+    }
 }
