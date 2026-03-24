@@ -70,8 +70,28 @@ public class Main extends Application {
                     }
                     drawGame(gc);
                 }
+                if (event.getCode() == javafx.scene.input.KeyCode.T) {
+                    if (player.getCraftingSystem().craftSplinters(player.getInventory())) {
+                        System.out.println("Rozštípl jsi drevo 4 třísky");
+                    }
+                    drawGame(gc);
+                }
+                if (event.getCode() == javafx.scene.input.KeyCode.O) {
+                    if (player.getCraftingSystem().craftFire(player.getInventory())) {
+                        System.out.println("ty žháři pomalu!");
+                    }
+                    drawGame(gc);
+                }
+                if (event.getCode() == javafx.scene.input.KeyCode.P) {
+                    if (player.getCraftingSystem().craftCookedMeat(player.getInventory())) {
+                        System.out.println("uepkl si maso wow! ");
+                    }
+                    drawGame(gc);
+                }
                 return;
+
             }
+
             switch (event.getCode()) {
                 case W:
                 case UP:
@@ -164,31 +184,39 @@ public class Main extends Application {
         }
         gc.fillText("Hlad: " + player.getHunger(), 20, 65);
 
+        // --- VYKRESLENÍ INVENTÁŘE (Pokud je zapnutý) ---
         if (showInventory) {
+            // Větší poloprůhledné černé pozadí přes mapu
+            gc.setFill(Color.rgb(0, 0, 0, 0.8));
+            gc.fillRect(40, 40, 720, 500);
 
-            gc.setFill(Color.rgb(0, 0, 0, 0.7));
-            gc.fillRect(100, 50, 600, 220);
-
-
+            // Nadpisy sloupečků
             gc.setFill(Color.WHITE);
             gc.setFont(javafx.scene.text.Font.font("Arial", 28));
-            gc.fillText("--- INVENTÁŘ ---", 120, 90);
+            gc.fillText("--- INVENTÁŘ ---", 70, 90);
+            gc.fillText("--- RECEPTY ---", 400, 90);
 
+            // Levý sloupeček: Získáme seznam věcí z modelu
             java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
 
             gc.setFont(javafx.scene.text.Font.font("Arial", 20));
-            gc.setFill(Color.YELLOW);
-            gc.fillText("[F] Vyrobit Sekeru (Kámen + Větve)", 120, 240);
-            gc.fillText("[G] Vyrobit Oštěp (Dřevo + Kámen)", 120, 270);
             if (items.isEmpty()) {
-                gc.fillText("Batoh je prázdný.", 120, 140);
+                gc.fillText("Batoh je prázdný.", 70, 140);
             } else {
-                int yOffset = 140;
+                int yOffset = 140; // Výška prvního řádku pro předměty
                 for (trosecnik.inventory.Item item : items) {
-                    gc.fillText("- " + item.getName() + " (" + item.getType() + ")", 120, yOffset);
-                    yOffset += 30;
+                    gc.fillText("- " + item.getName() + " (" + item.getType() + ")", 70, yOffset);
+                    yOffset += 30; // Další položka bude o kousek níž
                 }
             }
+
+            // Pravý sloupeček: Nápověda pro crafting
+            gc.setFill(Color.YELLOW);
+            gc.fillText("[F] Vyrobit Sekeru (Kámen + Větve)", 400, 140);
+            gc.fillText("[G] Vyrobit Oštěp (Dřevo + Kámen)", 400, 170);
+            gc.fillText("[T] Rozštípat Dřevo -> 4x Tříska", 400, 200);
+            gc.fillText("[O] Vyrobit Oheň (Tříska + Kámen)", 400, 230);
+            gc.fillText("[P] Upéct maso (Oheň + Syrové maso)", 400, 260);
         }
     }
     @Override
