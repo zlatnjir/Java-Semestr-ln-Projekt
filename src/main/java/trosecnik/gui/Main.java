@@ -92,6 +92,9 @@ public class Main extends Application {
                 case E:
                     player.interact();
                     break;
+                case R:
+                    player.eatFood();
+                    break;
             }
             drawGame(gc);
         });

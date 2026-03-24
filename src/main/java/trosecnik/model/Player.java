@@ -109,6 +109,22 @@ public class Player extends Entity {
             }
         }
     }
+    public void eatFood() {
+        if (inventory.hasItemByName("Pečené maso")) {
+            inventory.removeItemByName("Pečené maso");
+            this.hunger += 50;
+            if (this.hunger > 100) this.hunger = 100;
+            System.out.println("Snedl si pecene maso +50 hunger");
+        } else if (inventory.hasItemByName("Syrové maso")) {
+            inventory.removeItemByName("Syrové maso");
+            this.hunger += 15;
+            if (this.hunger > 100) this.hunger = 100;
+            System.out.println("Snedl si syrove maso +50 hunger");
+        } else {
+            System.out.println("si chudak nemas co jest");
+        }
+    }
+
     public CraftingSystem getCraftingSystem() { return craftingSystem; }
     public int getHealth() { return health; }
     public int getHunger() { return hunger; }
