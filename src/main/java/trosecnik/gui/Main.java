@@ -313,6 +313,44 @@ public class Main extends Application {
                 gc.fillText(craftSlot2.getName(), 535, 195);
             }
 
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 30));
+            gc.fillText("=", 625, 200);
+
+            gc.setFill(Color.rgb(40, 80, 40));
+            gc.fillRect(660, 150, 80, 80);
+            gc.setStroke(Color.LIGHTGREEN);
+            gc.strokeRect(660, 150, 80, 80);
+
+            String previewName = "";
+            if (craftSlot1 != null) {
+                String s1 = craftSlot1.getName();
+                String s2 = (craftSlot2 != null) ? craftSlot2.getName() : "";
+
+                if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
+                    previewName = "Sekera";
+                } else if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) {
+                    previewName = "Oštěp";
+                } else if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) {
+                    previewName = "Oheň";
+                } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
+                    previewName = "Pečené maso";
+                } else if (s1.equals("Dřevo") && s2.equals("")) {
+                    previewName = "4x Tříska";
+                }
+            }
+
+            if (!previewName.isEmpty()) {
+                gc.setFill(Color.LIGHTGREEN);
+                gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 13));
+                gc.fillText(previewName, 665, 195);
+            } else if (craftSlot1 != null || craftSlot2 != null) {
+                gc.setFill(Color.RED);
+                gc.setFont(javafx.scene.text.Font.font("Arial", 12));
+                gc.fillText("Neznámý", 675, 195);
+            }
+
+            // 3. TLAČÍTKO "VYROBIT"
             gc.setFill(Color.ORANGE);
             gc.fillRect(400, 260, 210, 50);
             gc.setFill(Color.BLACK);
