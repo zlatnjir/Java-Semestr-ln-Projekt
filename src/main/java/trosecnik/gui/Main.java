@@ -184,39 +184,66 @@ public class Main extends Application {
         }
         gc.fillText("Hlad: " + player.getHunger(), 20, 65);
 
-        // --- VYKRESLENÍ INVENTÁŘE (Pokud je zapnutý) ---
         if (showInventory) {
-            // Větší poloprůhledné černé pozadí přes mapu
             gc.setFill(Color.rgb(0, 0, 0, 0.8));
             gc.fillRect(40, 40, 720, 500);
 
-            // Nadpisy sloupečků
             gc.setFill(Color.WHITE);
             gc.setFont(javafx.scene.text.Font.font("Arial", 28));
-            gc.fillText("--- INVENTÁŘ ---", 70, 90);
-            gc.fillText("--- RECEPTY ---", 400, 90);
+            gc.fillText("--- BATOH ---", 70, 90);
+            gc.fillText("--- CRAFTING (1+1) ---", 400, 90);
 
-            // Levý sloupeček: Získáme seznam věcí z modelu
             java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+            int startX = 70;
+            int startY = 120;
+            int slotSize = 60;
+            int padding = 10;
 
-            gc.setFont(javafx.scene.text.Font.font("Arial", 20));
-            if (items.isEmpty()) {
-                gc.fillText("Batoh je prázdný.", 70, 140);
-            } else {
-                int yOffset = 140; // Výška prvního řádku pro předměty
-                for (trosecnik.inventory.Item item : items) {
-                    gc.fillText("- " + item.getName() + " (" + item.getType() + ")", 70, yOffset);
-                    yOffset += 30; // Další položka bude o kousek níž
+            for (int i = 0; i < 16; i++) {
+                int row = i / 4;
+                int col = i % 4;
+                int x = startX + col * (slotSize + padding);
+                int y = startY + row * (slotSize + padding);
+
+                gc.setFill(Color.DARKGRAY);
+                gc.fillRect(x, y, slotSize, slotSize);
+                gc.setStroke(Color.WHITE);
+                gc.strokeRect(x, y, slotSize, slotSize);
+
+                if (i < items.size()) {
+                    gc.setFill(Color.BLACK);
+                    gc.setFont(javafx.scene.text.Font.font("Arial", 12));
+                    String name = items.get(i).getName();
+
+                    String shortName = name.length() > 6 ? name.substring(0, 5) + "." : name;
+                    gc.fillText(shortName, x + 5, y + 35);
                 }
             }
 
-            // Pravý sloupeček: Nápověda pro crafting
-            gc.setFill(Color.YELLOW);
-            gc.fillText("[F] Vyrobit Sekeru (Kámen + Větve)", 400, 140);
-            gc.fillText("[G] Vyrobit Oštěp (Dřevo + Kámen)", 400, 170);
-            gc.fillText("[T] Rozštípat Dřevo -> 4x Tříska", 400, 200);
-            gc.fillText("[O] Vyrobit Oheň (Tříska + Kámen)", 400, 230);
-            gc.fillText("[P] Upéct maso (Oheň + Syrové maso)", 400, 260);
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 30));
+
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(400, 150, 80, 80);
+            gc.setStroke(Color.WHITE);
+            gc.strokeRect(400, 150, 80, 80);
+
+            gc.setFill(Color.WHITE);
+            gc.fillText("+", 495, 200);
+
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(530, 150, 80, 80);
+            gc.strokeRect(530, 150, 80, 80);
+
+            gc.setFill(Color.ORANGE);
+            gc.fillRect(400, 260, 210, 50);
+            gc.setFill(Color.BLACK);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 22));
+            gc.fillText("VYROBIT", 455, 295);
+
+            gc.setFill(Color.LIGHTGRAY);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 14));
+            gc.fillText("Tip: Pro snězení jídla na něj stačí kliknout v batohu.", 400, 350);
         }
     }
     @Override
