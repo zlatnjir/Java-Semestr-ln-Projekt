@@ -22,6 +22,8 @@ public class Main extends Application {
     private SaveLoadManager saveLoadManager;
     private TimeThread timeThread;
     private boolean showInventory = false;
+    private trosecnik.inventory.Item craftSlot1 = null;
+    private trosecnik.inventory.Item craftSlot2 = null;
 
     @Override
     public void start(Stage primaryStage) {
@@ -118,7 +120,72 @@ public class Main extends Application {
             }
             drawGame(gc);
         });
+        scene.setOnMouseClicked(event -> {
+            if (!showInventory) return;
 
+            double x = event.getX();
+            double y = event.getY();
+
+            if (x >= 70 && x <= 340 && y >= 120 && y <= 390) {
+                int col = (int) ((x - 70) / 70);
+                int row = (int) ((y - 120) / 70);
+                int index = row * 4 + col;
+
+                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                if (index < items.size()) {
+                    trosecnik.inventory.Item clickedItem = items.get(index);
+
+                    if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY && clickedItem.getType().equals("Jídlo")) {
+                        player.eatFood();
+                    }
+                    else if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                        if (craftSlot1 == null) {
+                            craftSlot1 = clickedItem;
+                        } else if (craftSlot2 == null && clickedItem != craftSlot1) {
+                            craftSlot2 = clickedItem;
+                        } else {
+                            craftSlot1 = clickedItem;
+                            craftSlot2 = null;
+                        }
+                    }
+                    drawGame(gc);
+                }
+            }
+
+            if (x >= 400 && x <= 610 && y >= 260 && y <= 310) {
+                boolean success = false;
+
+                if (craftSlot1 != null && craftSlot2 != null) {
+                    String s1 = craftSlot1.getName();
+                    String s2 = craftSlot2.getName();
+
+                    if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
+                        success = player.getCraftingSystem().craftAxe(player.getInventory());
+                    } else if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) {
+                        success = player.getCraftingSystem().craftSpear(player.getInventory());
+                    } else if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) {
+                        success = player.getCraftingSystem().craftFire(player.getInventory());
+                    } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
+                        success = player.getCraftingSystem().craftCookedMeat(player.getInventory());
+                    }
+                }
+
+                else if (craftSlot1 != null && craftSlot2 == null && craftSlot1.getName().equals("Dřevo")) {
+                    success = player.getCraftingSystem().craftSplinters(player.getInventory());
+                }
+
+                if (success) {
+                    System.out.println("Výroba úspěšná!");
+                    craftSlot1 = null;
+                    craftSlot2 = null;
+                } else {
+                    System.out.println("Z těchto surovin se nic vyrobit nedá.");
+                    craftSlot1 = null;
+                    craftSlot2 = null;
+                }
+                drawGame(gc);
+            }
+        });
 
         primaryStage.setTitle("Trosecnik");
         primaryStage.setScene(scene);
@@ -227,13 +294,24 @@ public class Main extends Application {
             gc.fillRect(400, 150, 80, 80);
             gc.setStroke(Color.WHITE);
             gc.strokeRect(400, 150, 80, 80);
+            if (craftSlot1 != null) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(javafx.scene.text.Font.font("Arial", 14));
+                gc.fillText(craftSlot1.getName(), 405, 195);
+            }
 
             gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 30));
             gc.fillText("+", 495, 200);
 
             gc.setFill(Color.DARKGRAY);
             gc.fillRect(530, 150, 80, 80);
             gc.strokeRect(530, 150, 80, 80);
+            if (craftSlot2 != null) {
+                gc.setFill(Color.BLACK);
+                gc.setFont(javafx.scene.text.Font.font("Arial", 14));
+                gc.fillText(craftSlot2.getName(), 535, 195);
+            }
 
             gc.setFill(Color.ORANGE);
             gc.fillRect(400, 260, 210, 50);
@@ -243,7 +321,7 @@ public class Main extends Application {
 
             gc.setFill(Color.LIGHTGRAY);
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
-            gc.fillText("Tip: Pro snězení jídla na něj stačí kliknout v batohu.", 400, 350);
+            gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
         }
     }
     @Override
