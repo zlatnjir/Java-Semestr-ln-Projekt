@@ -141,6 +141,7 @@ public class Main extends Application {
 
                 if (px >= 300 && px <= 500 && py >= 400 && py <= 450) {
                     System.out.println("Hráč kliknul na ULOŽIT HRU!");
+                    saveLoadManager.saveGame("save.txt", player);
                 }
                 else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
                     System.out.println("Hráč kliknul na NAČÍST HRU!");

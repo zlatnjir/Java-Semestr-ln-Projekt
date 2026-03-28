@@ -48,7 +48,24 @@ public class SaveLoadManager {
         }
     }
 
-    public void saveGame(String fileName) {
-        // TODO: doimplementovat shii
+    public void saveGame(String fileName, trosecnik.model.Player player) {
+        try {
+            java.io.PrintWriter writer = new java.io.PrintWriter(fileName);
+
+            writer.println(player.getX());
+            writer.println(player.getY());
+            writer.println(player.getHealth());
+            writer.println(player.getHunger());
+
+            for (trosecnik.inventory.Item item : player.getInventory().getItems()) {
+                writer.println(item.getName() + ";" + item.getType());
+            }
+
+            writer.close();
+            System.out.println("Paráda! Hra byla úspěšně uložena do souboru: " + fileName);
+
+        } catch (Exception e) {
+            System.out.println("Jejda, chyba při ukládání: " + e.getMessage());
+        }
     }
 }
