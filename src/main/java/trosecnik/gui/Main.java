@@ -22,6 +22,7 @@ public class Main extends Application {
     private SaveLoadManager saveLoadManager;
     private TimeThread timeThread;
     private boolean showInventory = false;
+    private boolean isPaused = false;
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
 
@@ -47,6 +48,19 @@ public class Main extends Application {
 
 
         scene.setOnKeyPressed(event -> {
+
+            if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                isPaused = !isPaused;
+                showInventory = false;
+                if (timeThread != null) {
+                    timeThread.setPaused(isPaused);
+                }
+                drawGame(gc);
+                return;
+            }
+
+            if (isPaused) return;
+
             if (event.getCode() == javafx.scene.input.KeyCode.C) {
                 showInventory = !showInventory;
                 drawGame(gc);
@@ -121,6 +135,7 @@ public class Main extends Application {
             drawGame(gc);
         });
         scene.setOnMouseClicked(event -> {
+            if (isPaused) return;
             if (!showInventory) return;
 
             double x = event.getX();
@@ -216,12 +231,12 @@ public class Main extends Application {
                     gc.setFill(Color.LIGHTGREEN);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     gc.setFill(Color.DARKGRAY);
-                    gc.fillOval(x * TILE_SIZE + 20, y * TILE_SIZE + 20, 40, 40); // Menší šedý kruh
+                    gc.fillOval(x * TILE_SIZE + 20, y * TILE_SIZE + 20, 40, 40);
                 } else if (tile == 'v') {
                     gc.setFill(Color.LIGHTGREEN);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     gc.setFill(Color.SADDLEBROWN);
-                    gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60); // Hnědý obdélníček
+                    gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60);
                 }
                 else if (tile == 'p') {
                     gc.setFill(Color.LIGHTGREEN);
@@ -350,7 +365,6 @@ public class Main extends Application {
                 gc.fillText("Neznámý", 675, 195);
             }
 
-            // 3. TLAČÍTKO "VYROBIT"
             gc.setFill(Color.ORANGE);
             gc.fillRect(400, 260, 210, 50);
             gc.setFill(Color.BLACK);
@@ -360,6 +374,19 @@ public class Main extends Application {
             gc.setFill(Color.LIGHTGRAY);
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
             gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
+        }
+
+        if (isPaused) {
+            gc.setFill(Color.rgb(0, 0, 0, 0.7));
+            gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
+
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 60));
+            gc.fillText("PAUZA", 300, 300);
+
+            gc.setFont(javafx.scene.text.Font.font("Arial", 20));
+            gc.fillText("Stiskni ESC pro návrat do hry", 260, 350);
+
         }
     }
     @Override
