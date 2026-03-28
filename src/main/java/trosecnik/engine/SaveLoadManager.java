@@ -48,7 +48,7 @@ public class SaveLoadManager {
         }
     }
 
-    public void saveGame(String fileName, trosecnik.model.Player player) {
+    public void saveGame(String fileName, trosecnik.model.Player player, GameMap map) {
         try {
             java.io.PrintWriter writer = new java.io.PrintWriter(fileName);
 
@@ -56,19 +56,31 @@ public class SaveLoadManager {
             writer.println(player.getY());
             writer.println(player.getHealth());
             writer.println(player.getHunger());
-
             for (trosecnik.inventory.Item item : player.getInventory().getItems()) {
                 writer.println(item.getName() + ";" + item.getType());
             }
 
+            writer.println("---MAPA---");
+            writer.println(map.getWidth());
+            writer.println(map.getHeight());
+
+            for (int y = 0; y < map.getHeight(); y++) {
+                StringBuilder row = new StringBuilder();
+                for (int x = 0; x < map.getWidth(); x++) {
+                    row.append(map.getTile(x, y));
+                }
+                writer.println(row.toString());
+            }
+
             writer.close();
-            System.out.println("Paráda! Hra byla úspěšně uložena do souboru: " + fileName);
+            System.out.println("Paráda! Hra byla úspěšně uložena včetně stavu světa!");
 
         } catch (Exception e) {
             System.out.println("Jejda, chyba při ukládání: " + e.getMessage());
         }
     }
-    public boolean loadGameState(String fileName, trosecnik.model.Player player) {
+
+    public boolean loadGameState(String fileName, trosecnik.model.Player player, GameMap map) {
         try {
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fileName));
 
@@ -76,23 +88,39 @@ public class SaveLoadManager {
             player.setY(Integer.parseInt(reader.readLine()));
             player.setHealth(Integer.parseInt(reader.readLine()));
             player.setHunger(Integer.parseInt(reader.readLine()));
-
             player.getInventory().getItems().clear();
 
             String line;
+            boolean readingMap = false;
+            int mapY = 0;
+
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length == 2) {
-                    player.getInventory().addItem(new trosecnik.inventory.Item(parts[0], parts[1]));
+                if (line.equals("---MAPA---")) {
+                    readingMap = true;
+                    int savedWidth = Integer.parseInt(reader.readLine());
+                    int savedHeight = Integer.parseInt(reader.readLine());
+                    continue;
+                }
+
+                if (readingMap) {
+                    for (int x = 0; x < line.length() && x < map.getWidth(); x++) {
+                        map.setTile(x, mapY, line.charAt(x));
+                    }
+                    mapY++;
+                } else {
+                    String[] parts = line.split(";");
+                    if (parts.length == 2) {
+                        player.getInventory().addItem(new trosecnik.inventory.Item(parts[0], parts[1]));
+                    }
                 }
             }
 
             reader.close();
-            System.out.println("Bomba! Hra byla úspěšně načtena ze souboru: " + fileName);
+            System.out.println("Bomba! Hra byla úspěšně načtena i s vyteženým světem!");
             return true;
 
         } catch (Exception e) {
-            System.out.println("Jejda, nenašel jsem uloženou hru nebo je soubor poškozený: " + e.getMessage());
+            System.out.println("Jejda, nenašel jsem uloženou hru: " + e.getMessage());
             return false;
         }
     }

@@ -140,16 +140,38 @@ public class Main extends Application {
                 double py = event.getY();
 
                 if (px >= 300 && px <= 500 && py >= 400 && py <= 450) {
-                    System.out.println("Hráč kliknul na ULOŽIT HRU!");
-                    saveLoadManager.saveGame("save.txt", player);
-                }
-                else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
-                    System.out.println("Hráč kliknul na NAČÍST HRU!");
-                    boolean loaded = saveLoadManager.loadGameState("save.txt", player);
+                    System.out.println("Otevírám okno pro uložení...");
 
-                    if (loaded) {
+                    javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+                    fileChooser.setTitle("Vyber, kam chceš hru uložit");
+                    fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
+
+                    java.io.File file = fileChooser.showSaveDialog(primaryStage);
+
+                    if (file != null) {
+                        saveLoadManager.saveGame(file.getAbsolutePath(), player, gameMap);
+
                         isPaused = false;
                         if (timeThread != null) timeThread.setPaused(false);
+                    }
+                }
+
+                else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
+                    System.out.println("Otevírám okno pro načtení...");
+
+                    javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+                    fileChooser.setTitle("Vyber uloženou hru k načtení");
+                    fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
+
+                    java.io.File file = fileChooser.showOpenDialog(primaryStage);
+
+                    if (file != null) {
+                        boolean loaded = saveLoadManager.loadGameState(file.getAbsolutePath(), player, gameMap);
+
+                        if (loaded) {
+                            isPaused = false;
+                            if (timeThread != null) timeThread.setPaused(false);
+                        }
                     }
                 }
                 return;

@@ -63,4 +63,11 @@ public class GameMap {
             return false;
         }
     }
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }
