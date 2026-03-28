@@ -68,4 +68,32 @@ public class SaveLoadManager {
             System.out.println("Jejda, chyba při ukládání: " + e.getMessage());
         }
     }
+    public boolean loadGameState(String fileName, trosecnik.model.Player player) {
+        try {
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(fileName));
+
+            player.setX(Integer.parseInt(reader.readLine()));
+            player.setY(Integer.parseInt(reader.readLine()));
+            player.setHealth(Integer.parseInt(reader.readLine()));
+            player.setHunger(Integer.parseInt(reader.readLine()));
+
+            player.getInventory().getItems().clear();
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(";");
+                if (parts.length == 2) {
+                    player.getInventory().addItem(new trosecnik.inventory.Item(parts[0], parts[1]));
+                }
+            }
+
+            reader.close();
+            System.out.println("Bomba! Hra byla úspěšně načtena ze souboru: " + fileName);
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Jejda, nenašel jsem uloženou hru nebo je soubor poškozený: " + e.getMessage());
+            return false;
+        }
+    }
 }

@@ -129,4 +129,8 @@ public class Player extends Entity {
     public int getHealth() { return health; }
     public int getHunger() { return hunger; }
     public Inventory getInventory() { return inventory; }
+    public void setX(int newX) { this.x = newX; }
+    public void setY(int newY) { this.y = newY; }
+    public void setHealth(int newHealth) { this.health = newHealth; }
+    public void setHunger(int newHunger) { this.hunger = newHunger; }
 }

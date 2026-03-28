@@ -145,6 +145,12 @@ public class Main extends Application {
                 }
                 else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
                     System.out.println("Hráč kliknul na NAČÍST HRU!");
+                    boolean loaded = saveLoadManager.loadGameState("save.txt", player);
+
+                    if (loaded) {
+                        isPaused = false;
+                        if (timeThread != null) timeThread.setPaused(false);
+                    }
                 }
                 return;
             }
