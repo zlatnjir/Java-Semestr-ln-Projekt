@@ -135,7 +135,18 @@ public class Main extends Application {
             drawGame(gc);
         });
         scene.setOnMouseClicked(event -> {
-            if (isPaused) return;
+            if (isPaused) {
+                double px = event.getX();
+                double py = event.getY();
+
+                if (px >= 300 && px <= 500 && py >= 400 && py <= 450) {
+                    System.out.println("Hráč kliknul na ULOŽIT HRU!");
+                }
+                else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
+                    System.out.println("Hráč kliknul na NAČÍST HRU!");
+                }
+                return;
+            }
             if (!showInventory) return;
 
             double x = event.getX();
@@ -387,6 +398,16 @@ public class Main extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 20));
             gc.fillText("Stiskni ESC pro návrat do hry", 260, 350);
 
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(300, 400, 200, 50);
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 20));
+            gc.fillText("ULOŽIT HRU", 340, 432);
+
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(300, 470, 200, 50);
+            gc.setFill(Color.WHITE);
+            gc.fillText("NAČÍST HRU", 340, 502);
         }
     }
     @Override
