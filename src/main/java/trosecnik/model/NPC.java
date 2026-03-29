@@ -5,6 +5,10 @@ public class NPC extends Entity {
     private boolean isHostile;
     private int health;
 
+    private int homeX;
+    private int homeY;
+    private boolean isAggroed;
+
     public NPC(String name, int startX, int startY, String dialogueMessage, boolean isHostile) {
         this.name = name;
         this.x = startX;
@@ -12,12 +16,22 @@ public class NPC extends Entity {
         this.dialogueMessage = dialogueMessage;
         this.isHostile = isHostile;
         this.health = 50;
+
+        this.homeX = startX;
+        this.homeY = startY;
+        this.isAggroed = false;
     }
 
     public String getDialogueMessage() { return dialogueMessage; }
     public boolean isHostile() { return isHostile; }
     public String getName() { return name; }
     public int getHealth() { return health; }
+
+    // Gettery a settery pro novou logiku
+    public int getHomeX() { return homeX; }
+    public int getHomeY() { return homeY; }
+    public boolean isAggroed() { return isAggroed; }
+    public void setAggroed(boolean aggroed) { this.isAggroed = aggroed; }
 
     public void takeDamage(int amount) {
         this.health -= amount;

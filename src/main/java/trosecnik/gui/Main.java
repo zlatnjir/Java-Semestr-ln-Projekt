@@ -25,6 +25,9 @@ public class Main extends Application {
     private boolean isPaused = false;
     private trosecnik.model.NPC domorodec;
     private trosecnik.model.NPC divocak;
+    private long lastBoarMoveTime = 0;
+    private long lastBoarAttackTime = 0;
+    private javafx.animation.AnimationTimer gameLoopTimer = null;
     private String fullDialogue = null;
     private int visibleChars = 0;
     private long lastTypingTick = 0;
@@ -126,77 +129,89 @@ public class Main extends Application {
 
             }
 
-            switch (event.getCode()) {
-                    case W:
-                    case UP:
-                        if (domorodec != null && player.getX() == domorodec.getX() && player.getY() - 1 == domorodec.getY()) {
-                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
-                        } else {
-                            player.move(0, -1);
-                        }
-                        if (fullDialogue != null) {
-                            fullDialogue = null;
-                            if (typingTimer != null) typingTimer.stop();
-                        }
-                        break;
-                    case S:
-                    case DOWN:
-                        if (domorodec != null && player.getX() == domorodec.getX() && player.getY() + 1 == domorodec.getY()) {
-                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
-                        } else {
-                            player.move(0, 1);
-                        }
-                        if (activeDialogue != null) activeDialogue = null;
-                        break;
-                    case A:
-                    case LEFT:
-                        if (domorodec != null && player.getX() - 1 == domorodec.getX() && player.getY() == domorodec.getY()) {
-                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
-                        } else {
-                            player.move(-1, 0);
-                        }
-                        if (activeDialogue != null) activeDialogue = null;
-                        break;
-                    case D:
-                    case RIGHT:
-                        if (domorodec != null && player.getX() + 1 == domorodec.getX() && player.getY() == domorodec.getY()) {
-                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
-                        } else {
-                            player.move(1, 0);
-                        }
-                        if (activeDialogue != null) activeDialogue = null;
-                        break;
-                case E:
-                    player.interact();
-                    if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
-                        fullDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
-                        visibleChars = 0;
-                        lastTypingTick = 0;
+            // --- OVLÁDÁNÍ HRÁČE A TAHY NEPŘÁTEL ---
+            int dx = 0;
+            int dy = 0;
+            boolean playerActed = false; // Zapamatuje si, jestli hráč udělal platný tah
 
-                        if (typingTimer != null) typingTimer.stop();
+            // Zjištění směru pohybu
+            if (event.getCode() == javafx.scene.input.KeyCode.W || event.getCode() == javafx.scene.input.KeyCode.UP) dy = -1;
+            else if (event.getCode() == javafx.scene.input.KeyCode.S || event.getCode() == javafx.scene.input.KeyCode.DOWN) dy = 1;
+            else if (event.getCode() == javafx.scene.input.KeyCode.A || event.getCode() == javafx.scene.input.KeyCode.LEFT) dx = -1;
+            else if (event.getCode() == javafx.scene.input.KeyCode.D || event.getCode() == javafx.scene.input.KeyCode.RIGHT) dx = 1;
 
-                        typingTimer = new javafx.animation.AnimationTimer() {
-                            @Override
-                            public void handle(long now) {
-                                if (fullDialogue != null && visibleChars < fullDialogue.length()) {
+            if (dx != 0 || dy != 0) {
+                int targetX = player.getX() + dx;
+                int targetY = player.getY() + dy;
 
-                                    if (now - lastTypingTick > 50_000_000) {
-                                        visibleChars++;
-                                        lastTypingTick = now;
-                                        drawGame(gc);
-                                    }
-                                } else {
-                                    this.stop();
-                                }
-                            }
-                        };
-                        typingTimer.start();
+                // 1. Kolize s Pátkem
+                if (domorodec != null && targetX == domorodec.getX() && targetY == domorodec.getY()) {
+                    System.out.println("Bum! Narazil jsi do " + domorodec.getName());
+                }
+                // 2. ÚTOK NA PRASE! (Pokud jdeme přímo na jeho políčko)
+                else if (divocak != null && divocak.getHealth() > 0 && targetX == divocak.getX() && targetY == divocak.getY()) {
+                    // Logika Zbraní!
+                    int dmg = 10; // Holé ruce
+                    if (player.getInventory().hasItemByName("Oštěp")) dmg = 35;
+                    else if (player.getInventory().hasItemByName("Sekera")) dmg = 20;
+
+                    divocak.takeDamage(dmg);
+                    System.out.println("BOD! Zásah za " + dmg + " DMG! Praseti zbývá: " + divocak.getHealth() + " HP.");
+
+                    if (divocak.getHealth() <= 0) {
+                        System.out.println("Prase padlo! Můžeš ho vytěžit (vem Oštěp a dej E)!");
+                        // Proměníme mrtvé NPC zpátky na mapovou surovinu 'p'
+                        gameMap.setTile(targetX, targetY, 'p');
                     }
-                    break;
-                    case R:
-                    player.eatFood();
-                    break;
+                    playerActed = true; // Útok se počítá jako tah
+                }
+                // 3. Normální pohyb (pokud je políčko volné)
+                else {
+                    player.move(dx, dy);
+                    playerActed = true; // Pohyb se počítá jako tah
+                }
+
+                // Zavření dialogu při jakémkoliv pohybu
+                if (fullDialogue != null) {
+                    fullDialogue = null;
+                    if (typingTimer != null) typingTimer.stop();
+                }
             }
+            // Klávesa E: Interakce / Mluvení
+            else if (event.getCode() == javafx.scene.input.KeyCode.E) {
+                player.interact(); // Sbírání surovin
+                playerActed = true; // I neúspěšné sbírání trvá čas
+
+                // Mluvení s Pátkem
+                if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
+                    fullDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
+                    visibleChars = 0;
+                    lastTypingTick = 0;
+                    if (typingTimer != null) typingTimer.stop();
+
+                    typingTimer = new javafx.animation.AnimationTimer() {
+                        @Override
+                        public void handle(long now) {
+                            if (fullDialogue != null && visibleChars < fullDialogue.length()) {
+                                if (now - lastTypingTick > 50_000_000) {
+                                    visibleChars++;
+                                    lastTypingTick = now;
+                                    drawGame(gc);
+                                }
+                            } else {
+                                this.stop();
+                            }
+                        }
+                    };
+                    typingTimer.start();
+                }
+            }
+            // Klávesa R: Jídlo
+            else if (event.getCode() == javafx.scene.input.KeyCode.R) {
+                player.eatFood();
+                playerActed = true;
+            }
+
             drawGame(gc);
         });
         scene.setOnMouseClicked(event -> {
@@ -306,7 +321,88 @@ public class Main extends Application {
                 drawGame(gc);
             }
         });
+        // --- HLAVNÍ HERNÍ SMYČKA (Real-Time AI) ---
+        gameLoopTimer = new javafx.animation.AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                // AI běží jen když není pauza a prase je naživu
+                if (!isPaused && divocak != null && divocak.getHealth() > 0) {
 
+                    int pDx = player.getX() - divocak.getX();
+                    int pDy = player.getY() - divocak.getY();
+                    int distance = Math.abs(pDx) + Math.abs(pDy);
+
+                    // 1. ÚTOK PRASETE (Každé 2 vteřiny, pokud je hned vedle tebe)
+                    if (distance == 1) {
+                        // 2_000_000_000 nanosekund = 2 vteřiny
+                        if (now - lastBoarAttackTime > 2_000_000_000L) {
+                            player.setHealth(player.getHealth() - 15);
+                            System.out.println("AU! Prase tě kouslo za 15 HP! Zbývá ti: " + player.getHealth());
+                            lastBoarAttackTime = now;
+                            drawGame(gc); // Překreslíme, aby se ukázal úbytek HP
+                        }
+                    }
+                    // 2. POHYB PRASETE (Každou 1 vteřinu)
+                    else {
+                        if (now - lastBoarMoveTime > 1_000_000_000L) {
+                            int targetDivX = divocak.getX();
+                            int targetDivY = divocak.getY();
+
+                            // --- A) ZMĚNA STAVU (Nálada prasete) ---
+                            if (divocak.isAggroed() && distance >= 5) {
+                                // Utekl jsi mu na 5 bloků! Ztrácí zájem.
+                                divocak.setAggroed(false);
+                                System.out.println("Prase tě ztratilo z dohledu a vrací se domů...");
+                            } else if (!divocak.isAggroed() && distance <= 3) {
+                                // Vlezl jsi mu do revíru (3 bloky)! Útočí.
+                                divocak.setAggroed(true);
+                                System.out.println("Chro chro! Prase se na tebe zaměřilo!");
+                            }
+
+                            // --- B) VÝPOČET KROKU PODLE NÁLADY ---
+                            if (divocak.isAggroed()) {
+                                // JDE PO HRÁČI
+                                if (Math.abs(pDx) > Math.abs(pDy)) targetDivX += (pDx > 0 ? 1 : -1);
+                                else targetDivY += (pDy > 0 ? 1 : -1);
+                            } else {
+                                // NENÍ NAŠTVANÉ -> ŘEŠÍ DOMOV
+                                int hDx = divocak.getHomeX() - divocak.getX();
+                                int hDy = divocak.getHomeY() - divocak.getY();
+                                int distanceToHome = Math.abs(hDx) + Math.abs(hDy);
+
+                                if (distanceToHome > 2) {
+                                    // Je moc daleko od domova, poslušně se vrací
+                                    if (Math.abs(hDx) > Math.abs(hDy)) targetDivX += (hDx > 0 ? 1 : -1);
+                                    else targetDivY += (hDy > 0 ? 1 : -1);
+                                } else {
+                                    // Je doma (max 2 bloky od startu), náhodně bloumá
+                                    if (Math.random() < 0.3) {
+                                        int[] dirs = {-1, 0, 1};
+                                        int rMoveX = dirs[(int)(Math.random() * 3)];
+                                        int rMoveY = (rMoveX == 0) ? dirs[(int)(Math.random() * 3)] : 0;
+                                        targetDivX += rMoveX;
+                                        targetDivY += rMoveY;
+                                    }
+                                }
+                            }
+
+                            // --- C) PROVEDENÍ KROKU (Kolize a překreslení) ---
+                            if ((targetDivX != divocak.getX() || targetDivY != divocak.getY()) &&
+                                    gameMap.isWalkable(targetDivX, targetDivY) &&
+                                    !(targetDivX == player.getX() && targetDivY == player.getY()) &&
+                                    !(domorodec != null && targetDivX == domorodec.getX() && targetDivY == domorodec.getY())) {
+
+                                divocak.setX(targetDivX);
+                                divocak.setY(targetDivY);
+                                drawGame(gc);
+                            }
+                            lastBoarMoveTime = now;
+                        }
+                    }
+                }
+            }
+        };
+        gameLoopTimer.start(); // Roztočíme herní smyčku!
         primaryStage.setTitle("Trosecnik");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
