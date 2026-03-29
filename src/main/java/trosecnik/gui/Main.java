@@ -23,6 +23,7 @@ public class Main extends Application {
     private TimeThread timeThread;
     private boolean showInventory = false;
     private boolean isPaused = false;
+    private trosecnik.model.NPC domorodec;
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
 
@@ -33,6 +34,7 @@ public class Main extends Application {
 
         if (gameMap != null) {
             player = new Player("Trosečník", 2, 1, gameMap);
+            domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!", false);
         } else {
             System.out.println("Kritická chyba: Mapa se nenačetla!");
             return;
@@ -127,6 +129,9 @@ public class Main extends Application {
                     break;
                 case E:
                     player.interact();
+                    if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
+                        domorodec.interact();
+                    }
                     break;
                 case R:
                     player.eatFood();
@@ -291,6 +296,14 @@ public class Main extends Application {
 
         gc.setFill(Color.RED);
         gc.fillOval(player.getX() * TILE_SIZE, player.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+        if (domorodec != null) {
+            gc.setFill(Color.YELLOW);
+            gc.fillOval(domorodec.getX() * TILE_SIZE, domorodec.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 14));
+            gc.fillText(domorodec.getName(), domorodec.getX() * TILE_SIZE + 20, domorodec.getY() * TILE_SIZE - 5);
+        }
 
         gc.setFill(Color.WHITE);
         gc.setFont(javafx.scene.text.Font.font("Arial", 24));
