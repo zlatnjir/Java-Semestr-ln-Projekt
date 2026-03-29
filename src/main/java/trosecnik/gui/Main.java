@@ -26,6 +26,7 @@ public class Main extends Application {
     private trosecnik.model.NPC domorodec;
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
+    private String activeDialogue = null;
 
     @Override
     public void start(Stage primaryStage) {
@@ -111,29 +112,50 @@ public class Main extends Application {
             }
 
             switch (event.getCode()) {
-                case W:
-                case UP:
-                    player.move(0, -1);
-                    break;
-                case S:
-                case DOWN:
-                    player.move(0, 1);
-                    break;
-                case A:
-                case LEFT:
-                    player.move(-1, 0);
-                    break;
-                case D:
-                case RIGHT:
-                    player.move(1, 0);
-                    break;
-                case E:
-                    player.interact();
-                    if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
-                        domorodec.interact();
-                    }
-                    break;
-                case R:
+                    case W:
+                    case UP:
+                        if (domorodec != null && player.getX() == domorodec.getX() && player.getY() - 1 == domorodec.getY()) {
+                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
+                        } else {
+                            player.move(0, -1);
+                        }
+                        if (activeDialogue != null) activeDialogue = null; // Zavře dialog při pohybu
+                        break;
+                    case S:
+                    case DOWN:
+                        if (domorodec != null && player.getX() == domorodec.getX() && player.getY() + 1 == domorodec.getY()) {
+                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
+                        } else {
+                            player.move(0, 1);
+                        }
+                        if (activeDialogue != null) activeDialogue = null;
+                        break;
+                    case A:
+                    case LEFT:
+                        if (domorodec != null && player.getX() - 1 == domorodec.getX() && player.getY() == domorodec.getY()) {
+                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
+                        } else {
+                            player.move(-1, 0);
+                        }
+                        if (activeDialogue != null) activeDialogue = null;
+                        break;
+                    case D:
+                    case RIGHT:
+                        if (domorodec != null && player.getX() + 1 == domorodec.getX() && player.getY() == domorodec.getY()) {
+                            System.out.println("Bum! Narazil jsi do " + domorodec.getName());
+                        } else {
+                            player.move(1, 0);
+                        }
+                        if (activeDialogue != null) activeDialogue = null;
+                        break;
+                    case E:
+                        player.interact();
+                        if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
+                            activeDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
+                            drawGame(gc);
+                        }
+                        break;
+                    case R:
                     player.eatFood();
                     break;
             }
@@ -428,6 +450,25 @@ public class Main extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
             gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
         }
+            if (activeDialogue != null && domorodec != null) {
+                double bubbleX = domorodec.getX() * TILE_SIZE - 100; // Trochu vlevo od NPC
+                double bubbleY = domorodec.getY() * TILE_SIZE - 120; // Nad hlavou NPC
+                double bubbleW = 300;
+                double bubbleH = 80;
+
+                gc.setFill(Color.rgb(30, 30, 30, 0.8));
+                gc.fillRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 20, 20);
+                gc.setStroke(Color.YELLOW);
+                gc.setLineWidth(3);
+                gc.strokeRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 20, 20);
+
+                gc.setFill(Color.WHITE);
+                gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 16));
+
+
+                String shortText = activeDialogue.length() > 60 ? activeDialogue.substring(0, 57) + "..." : activeDialogue;
+                gc.fillText(shortText, bubbleX + 15, bubbleY + 45);
+            }
 
         if (isPaused) {
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
