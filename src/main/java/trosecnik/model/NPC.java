@@ -27,7 +27,6 @@ public class NPC extends Entity {
     public String getName() { return name; }
     public int getHealth() { return health; }
 
-    // Gettery a settery pro novou logiku
     public int getHomeX() { return homeX; }
     public int getHomeY() { return homeY; }
     public boolean isAggroed() { return isAggroed; }
