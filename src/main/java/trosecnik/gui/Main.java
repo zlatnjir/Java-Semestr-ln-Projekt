@@ -450,25 +450,40 @@ public class Main extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
             gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
         }
-            if (activeDialogue != null && domorodec != null) {
-                double bubbleX = domorodec.getX() * TILE_SIZE - 100; // Trochu vlevo od NPC
-                double bubbleY = domorodec.getY() * TILE_SIZE - 120; // Nad hlavou NPC
-                double bubbleW = 300;
-                double bubbleH = 80;
+        if (activeDialogue != null && domorodec != null) {
+            double barX = 0;
+            double barY = 0;
+            double barW = 10 * TILE_SIZE;
+            double barH = TILE_SIZE * 1.5;
 
-                gc.setFill(Color.rgb(30, 30, 30, 0.8));
-                gc.fillRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 20, 20);
-                gc.setStroke(Color.YELLOW);
-                gc.setLineWidth(3);
-                gc.strokeRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 20, 20);
+            gc.setFill(Color.rgb(10, 10, 10, 0.9));
+            gc.fillRect(barX, barY, barW, barH);
 
-                gc.setFill(Color.WHITE);
-                gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 16));
+            gc.setFill(Color.YELLOW);
+            gc.fillRect(barX, barY + barH - 5, barW, 5);
 
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 22));
 
-                String shortText = activeDialogue.length() > 60 ? activeDialogue.substring(0, 57) + "..." : activeDialogue;
-                gc.fillText(shortText, bubbleX + 15, bubbleY + 45);
+            String fullMessage = activeDialogue;
+
+            int maxChars = 55;
+            double textStartX = 30;
+            double textY = 40;
+
+            if (fullMessage.length() > maxChars) {
+                int splitIndex = fullMessage.lastIndexOf(' ', maxChars);
+                if (splitIndex == -1) splitIndex = maxChars;
+
+                String line1 = fullMessage.substring(0, splitIndex).trim();
+                String line2 = fullMessage.substring(splitIndex).trim();
+
+                gc.fillText(line1, barX + textStartX, textY);
+                gc.fillText(line2, barX + textStartX, textY + 30);
+            } else {
+                gc.fillText(fullMessage, barX + textStartX, textY);
             }
+        }
 
         if (isPaused) {
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
