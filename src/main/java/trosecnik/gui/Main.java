@@ -24,6 +24,10 @@ public class Main extends Application {
     private boolean showInventory = false;
     private boolean isPaused = false;
     private trosecnik.model.NPC domorodec;
+    private String fullDialogue = null;
+    private int visibleChars = 0;
+    private long lastTypingTick = 0;
+    private javafx.animation.AnimationTimer typingTimer = null;
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
     private String activeDialogue = null;
@@ -53,6 +57,14 @@ public class Main extends Application {
         scene.setOnKeyPressed(event -> {
 
             if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+
+                if (fullDialogue != null) {
+                    fullDialogue = null;
+                    if (typingTimer != null) typingTimer.stop();
+                    drawGame(gc);
+                    return;
+                }
+
                 isPaused = !isPaused;
                 showInventory = false;
                 if (timeThread != null) {
@@ -119,7 +131,10 @@ public class Main extends Application {
                         } else {
                             player.move(0, -1);
                         }
-                        if (activeDialogue != null) activeDialogue = null; // Zavře dialog při pohybu
+                        if (fullDialogue != null) {
+                            fullDialogue = null;
+                            if (typingTimer != null) typingTimer.stop();
+                        }
                         break;
                     case S:
                     case DOWN:
@@ -148,13 +163,33 @@ public class Main extends Application {
                         }
                         if (activeDialogue != null) activeDialogue = null;
                         break;
-                    case E:
-                        player.interact();
-                        if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
-                            activeDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
-                            drawGame(gc);
-                        }
-                        break;
+                case E:
+                    player.interact();
+                    if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
+                        fullDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
+                        visibleChars = 0;
+                        lastTypingTick = 0;
+
+                        if (typingTimer != null) typingTimer.stop();
+
+                        typingTimer = new javafx.animation.AnimationTimer() {
+                            @Override
+                            public void handle(long now) {
+                                if (fullDialogue != null && visibleChars < fullDialogue.length()) {
+
+                                    if (now - lastTypingTick > 50_000_000) {
+                                        visibleChars++;
+                                        lastTypingTick = now;
+                                        drawGame(gc);
+                                    }
+                                } else {
+                                    this.stop();
+                                }
+                            }
+                        };
+                        typingTimer.start();
+                    }
+                    break;
                     case R:
                     player.eatFood();
                     break;
@@ -327,6 +362,7 @@ public class Main extends Application {
             gc.fillText(domorodec.getName(), domorodec.getX() * TILE_SIZE + 20, domorodec.getY() * TILE_SIZE - 5);
         }
 
+
         gc.setFill(Color.WHITE);
         gc.setFont(javafx.scene.text.Font.font("Arial", 24));
 
@@ -450,9 +486,12 @@ public class Main extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
             gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
         }
-        if (activeDialogue != null && domorodec != null) {
+        if (fullDialogue != null && domorodec != null) {
+
+            String typedMessage = fullDialogue.substring(0, visibleChars);
+
             double barX = 0;
-            double barY = 0;
+            double barY = 100;
             double barW = 10 * TILE_SIZE;
             double barH = TILE_SIZE * 1.5;
 
@@ -465,23 +504,28 @@ public class Main extends Application {
             gc.setFill(Color.WHITE);
             gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 22));
 
-            String fullMessage = activeDialogue;
-
             int maxChars = 55;
             double textStartX = 30;
-            double textY = 40;
+            double textYStart = barY + 40;
 
-            if (fullMessage.length() > maxChars) {
-                int splitIndex = fullMessage.lastIndexOf(' ', maxChars);
-                if (splitIndex == -1) splitIndex = maxChars;
+            if (typedMessage.length() > maxChars) {
+                int splitIndex = fullDialogue.lastIndexOf(' ', maxChars);
+                if (splitIndex == -1 || splitIndex < typedMessage.length() / 2) splitIndex = maxChars; // Fallback
 
-                String line1 = fullMessage.substring(0, splitIndex).trim();
-                String line2 = fullMessage.substring(splitIndex).trim();
+                String line1 = "";
+                String line2 = "";
 
-                gc.fillText(line1, barX + textStartX, textY);
-                gc.fillText(line2, barX + textStartX, textY + 30);
+                if (visibleChars <= splitIndex) {
+                    line1 = typedMessage;
+                } else {
+                    line1 = fullDialogue.substring(0, splitIndex).trim();
+                    line2 = typedMessage.substring(splitIndex).trim();
+                }
+
+                gc.fillText(line1, barX + textStartX, textYStart);
+                gc.fillText(line2, barX + textStartX, textYStart + 30);
             } else {
-                gc.fillText(fullMessage, barX + textStartX, textY);
+                gc.fillText(typedMessage, barX + textStartX, textYStart);
             }
         }
 
