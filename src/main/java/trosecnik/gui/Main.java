@@ -24,6 +24,7 @@ public class Main extends Application {
     private boolean showInventory = false;
     private boolean isPaused = false;
     private trosecnik.model.NPC domorodec;
+    private trosecnik.model.NPC divocak;
     private String fullDialogue = null;
     private int visibleChars = 0;
     private long lastTypingTick = 0;
@@ -39,7 +40,9 @@ public class Main extends Application {
 
         if (gameMap != null) {
             player = new Player("Trosečník", 2, 1, gameMap);
+
             domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!", false);
+            divocak = new trosecnik.model.NPC("Divoké prase", 2, 6, "", true);
         } else {
             System.out.println("Kritická chyba: Mapa se nenačetla!");
             return;
@@ -362,6 +365,15 @@ public class Main extends Application {
             gc.fillText(domorodec.getName(), domorodec.getX() * TILE_SIZE + 20, domorodec.getY() * TILE_SIZE - 5);
         }
 
+        if (divocak != null && divocak.getHealth() > 0) {
+            gc.setFill(Color.PURPLE);
+            gc.fillRoundRect(divocak.getX() * TILE_SIZE + 10, divocak.getY() * TILE_SIZE + 20, 60, 40, 20, 20);
+
+            gc.setFill(Color.RED);
+            gc.fillRect(divocak.getX() * TILE_SIZE + 15, divocak.getY() * TILE_SIZE + 5, 50, 5);
+            gc.setFill(Color.LIGHTGREEN);
+            gc.fillRect(divocak.getX() * TILE_SIZE + 15, divocak.getY() * TILE_SIZE + 5, divocak.getHealth(), 5);
+        }
 
         gc.setFill(Color.WHITE);
         gc.setFont(javafx.scene.text.Font.font("Arial", 24));
