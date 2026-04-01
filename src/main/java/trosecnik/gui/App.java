@@ -150,35 +150,20 @@ public class App extends Application {
                 int targetX = player.getX() + dx;
                 int targetY = player.getY() + dy;
 
-
+                // 1. Kolize s Pátkem
                 if (domorodec != null && targetX == domorodec.getX() && targetY == domorodec.getY()) {
                     System.out.println("Bum! Narazil jsi do " + domorodec.getName());
                 }
+                // 2. Kolize s Prasetem (UŽ NEÚTOČÍME, JEN NARÁŽÍME)
                 else if (divocak != null && divocak.getHealth() > 0 && targetX == divocak.getX() && targetY == divocak.getY()) {
-
-                    int dmg = 10;
-
-                    boolean hasSpear = player.getInventory().getItems().stream().anyMatch(i -> i.getName().equals("Oštěp"));
-                    boolean hasAxe = player.getInventory().getItems().stream().anyMatch(i -> i.getName().equals("Sekera"));
-
-                    if (hasSpear) {
-                        dmg = 35;
-                    } else if (hasAxe) {
-                        dmg = 20;
-                    }
-
-                    divocak.takeDamage(dmg);
-                    System.out.println("BOD! Zásah za " + dmg + " DMG! Praseti zbývá: " + divocak.getHealth() + " HP.");
-
-                    if (divocak.getHealth() <= 0) {
-                        System.out.println("Prase padlo! Můžeš ho vytěžit (vem Oštěp a dej E)!");
-                        gameMap.setTile(targetX, targetY, 'p');
-                    }
+                    System.out.println("Narazil jsi do divočáka! K útoku použij myš!");
                 }
+                // 3. Normální pohyb (pokud je políčko volné)
                 else {
                     player.move(dx, dy);
                 }
 
+                // Pokud hráč udělá krok, dialog vždy zmizí
                 if (fullDialogue != null) {
                     fullDialogue = null;
                     if (typingTimer != null) typingTimer.stop();
@@ -261,15 +246,53 @@ public class App extends Application {
                 }
                 return;
             }
+
+            // A) Převod pixelů myši na políčka mřížky
             int gridX = (int) (event.getX() / TILE_SIZE);
             int gridY = (int) (event.getY() / TILE_SIZE);
 
+            // B) Kontrola, jestli hráč neklikl mimo mapu
             if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
 
+                // C) Výpočet vzdálenosti jako KRUHOVÝ RÁDIUS (Euklidovská vzdálenost)
                 double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
 
-                System.out.println("Klikl jsi na políčko [" + gridX + ", " + gridY + "]. Vzdálenost: " + distance + " bloků.");
+                // --- D) Zjistíme, co hráč právě drží v ruce (podle Hotbaru) ---
+                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                String activeItemName = "Ruce"; // Výchozí zbraň
+                if (activeHotbarSlot < items.size()) {
+                    activeItemName = items.get(activeHotbarSlot).getName();
+                }
 
+                // --- E) ÚTOK NA NEPŘÍTELE ---
+                // Pokud hráč kliknul PŘESNĚ na políčko, kde stojí živé prase
+                if (divocak != null && divocak.getHealth() > 0 && gridX == divocak.getX() && gridY == divocak.getY()) {
+
+                    double range = 1.5; // Dosah pro holé ruce
+                    int dmg = 10;
+
+                    if (activeItemName.equals("Oštěp")) {
+                        range = 2.5; // Oštěp dosáhne dál! (i šikmo)
+                        dmg = 35;
+                    } else if (activeItemName.equals("Sekera")) {
+                        range = 1.5; // Sekera je na blízko
+                        dmg = 20;
+                    }
+
+                    // Zkontrolujeme, jestli je cíl v dosahu naší zbraně
+                    if (distance <= range) {
+                        divocak.takeDamage(dmg);
+                        System.out.println("ŠMIK! Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG! Praseti zbývá: " + divocak.getHealth() + " HP.");
+
+                        if (divocak.getHealth() <= 0) {
+                            System.out.println("Prase padlo!");
+                            gameMap.setTile(gridX, gridY, 'p'); // Proměníme ho na těžitelné maso
+                        }
+                    } else {
+                        System.out.println("Máchl jsi do prázdna zbraní '" + activeItemName + "', prase je moc daleko!");
+                    }
+                    drawGame(gc);
+                }
             }
 
             double x = event.getX();
