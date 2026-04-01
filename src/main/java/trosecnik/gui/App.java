@@ -34,6 +34,7 @@ public class App extends Application {
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
     private String activeDialogue = null;
+    private int activeHotbarSlot = 0;
 
     @Override
     public void start(Stage primaryStage) {
@@ -86,6 +87,14 @@ public class App extends Application {
                 drawGame(gc);
                 return;
             }
+            if (!isPaused && !showInventory) {
+                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT1 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD1) { activeHotbarSlot = 0; drawGame(gc); return; }
+                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT2 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD2) { activeHotbarSlot = 1; drawGame(gc); return; }
+                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT3 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD3) { activeHotbarSlot = 2; drawGame(gc); return; }
+                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT4 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD4) { activeHotbarSlot = 3; drawGame(gc); return; }
+                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT5 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD5) { activeHotbarSlot = 4; drawGame(gc); return; }
+            }
+
 
             if (showInventory) {
                 if (event.getCode() == javafx.scene.input.KeyCode.F) {
@@ -640,6 +649,53 @@ public class App extends Application {
             }
         }
 
+        if (!showInventory) {
+            int hotbarSlots = 5;
+            int slotSize = 60;
+            int spacing = 10;
+            int totalWidth = (hotbarSlots * slotSize) + ((hotbarSlots - 1) * spacing);
+            int startX = (10 * TILE_SIZE - totalWidth) / 2;
+            int startY = 8 * TILE_SIZE - slotSize - 20;
+
+            gc.setFill(Color.rgb(0, 0, 0, 0.6));
+            gc.fillRect(startX - 15, startY - 15, totalWidth + 30, slotSize + 30);
+
+
+            java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+
+            for (int i = 0; i < hotbarSlots; i++) {
+                int x = startX + i * (slotSize + spacing);
+                int y = startY;
+
+
+                gc.setFill(Color.rgb(50, 50, 50, 0.9));
+                gc.fillRect(x, y, slotSize, slotSize);
+
+
+                if (i == activeHotbarSlot) {
+                    gc.setStroke(Color.YELLOW);
+                    gc.setLineWidth(4);
+                } else {
+                    gc.setStroke(Color.WHITE);
+                    gc.setLineWidth(2);
+                }
+                gc.strokeRect(x, y, slotSize, slotSize);
+                gc.setLineWidth(1);
+
+                gc.setFill(Color.LIGHTGRAY);
+                gc.setFont(javafx.scene.text.Font.font("Arial", 12));
+                gc.fillText(String.valueOf(i + 1), x + 5, y + 15);
+
+                if (i < items.size()) {
+                    String name = items.get(i).getName();
+                    String shortName = name.length() > 6 ? name.substring(0, 5) + "." : name;
+
+                    gc.setFill(Color.WHITE);
+                    gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 12));
+                    gc.fillText(shortName, x + 5, y + 40);
+                }
+            }
+        }
         if (isPaused) {
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
             gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
