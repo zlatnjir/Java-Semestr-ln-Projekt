@@ -261,7 +261,16 @@ public class App extends Application {
                 }
                 return;
             }
-            if (!showInventory) return;
+            int gridX = (int) (event.getX() / TILE_SIZE);
+            int gridY = (int) (event.getY() / TILE_SIZE);
+
+            if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
+
+                double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
+
+                System.out.println("Klikl jsi na políčko [" + gridX + ", " + gridY + "]. Vzdálenost: " + distance + " bloků.");
+
+            }
 
             double x = event.getX();
             double y = event.getY();
