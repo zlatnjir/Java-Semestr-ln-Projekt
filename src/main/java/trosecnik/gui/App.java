@@ -12,6 +12,8 @@ import trosecnik.engine.SaveLoadManager;
 import trosecnik.engine.TimeThread;
 import trosecnik.model.Player;
 
+import java.util.List;
+
 public class App extends Application {
 
     private static final int TILE_SIZE = 80;
@@ -26,15 +28,14 @@ public class App extends Application {
     private trosecnik.model.NPC divocak;
     private long lastBoarMoveTime = 0;
     private long lastBoarAttackTime = 0;
-    private javafx.animation.AnimationTimer gameLoopTimer = null;
     private String fullDialogue = null;
     private int visibleChars = 0;
     private long lastTypingTick = 0;
     private javafx.animation.AnimationTimer typingTimer = null;
     private trosecnik.inventory.Item craftSlot1 = null;
     private trosecnik.inventory.Item craftSlot2 = null;
-    private String activeDialogue = null;
     private int activeHotbarSlot = 0;
+
 
     @Override
     public void start(Stage primaryStage) {
@@ -43,7 +44,6 @@ public class App extends Application {
 
         if (gameMap != null) {
             player = new Player("Trosečník", 2, 1, gameMap);
-
             domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!", false);
             divocak = new trosecnik.model.NPC("Divoké prase", 2, 6, "", true);
         } else {
@@ -52,30 +52,24 @@ public class App extends Application {
         }
 
         Canvas canvas = new Canvas(10 * TILE_SIZE, 8 * TILE_SIZE);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        final GraphicsContext gc = canvas.getGraphicsContext2D();
 
         drawGame(gc);
 
         StackPane root = new StackPane(canvas);
         Scene scene = new Scene(root);
 
-
         scene.setOnKeyPressed(event -> {
-
             if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
-
                 if (fullDialogue != null) {
                     fullDialogue = null;
                     if (typingTimer != null) typingTimer.stop();
                     drawGame(gc);
                     return;
                 }
-
                 isPaused = !isPaused;
                 showInventory = false;
-                if (timeThread != null) {
-                    timeThread.setPaused(isPaused);
-                }
+                if (timeThread != null) timeThread.setPaused(isPaused);
                 drawGame(gc);
                 return;
             }
@@ -87,54 +81,43 @@ public class App extends Application {
                 drawGame(gc);
                 return;
             }
-            if (!isPaused && !showInventory) {
-                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT1 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD1) { activeHotbarSlot = 0; drawGame(gc); return; }
-                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT2 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD2) { activeHotbarSlot = 1; drawGame(gc); return; }
-                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT3 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD3) { activeHotbarSlot = 2; drawGame(gc); return; }
-                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT4 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD4) { activeHotbarSlot = 3; drawGame(gc); return; }
-                if (event.getCode() == javafx.scene.input.KeyCode.DIGIT5 || event.getCode() == javafx.scene.input.KeyCode.NUMPAD5) { activeHotbarSlot = 4; drawGame(gc); return; }
+
+            if (!showInventory) {
+                switch (event.getCode()) {
+                    case DIGIT1, NUMPAD1 -> { activeHotbarSlot = 0; drawGame(gc); return; }
+                    case DIGIT2, NUMPAD2 -> { activeHotbarSlot = 1; drawGame(gc); return; }
+                    case DIGIT3, NUMPAD3 -> { activeHotbarSlot = 2; drawGame(gc); return; }
+                    case DIGIT4, NUMPAD4 -> { activeHotbarSlot = 3; drawGame(gc); return; }
+                    case DIGIT5, NUMPAD5 -> { activeHotbarSlot = 4; drawGame(gc); return; }
+                }
             }
 
-
             if (showInventory) {
-                if (event.getCode() == javafx.scene.input.KeyCode.F) {
-                    boolean success = player.getCraftingSystem().craftAxe(player.getInventory());
-                    if (success) {
-                        System.out.println("Úspěšně jsi vyrobil Sekeru!");
-                    } else {
-                        System.out.println("Nemáš dost surovin na Sekeru (Kámen + Větve).");
+                switch (event.getCode()) {
+                    case F -> {
+                        if (player.getCraftingSystem().craftAxe(player.getInventory())) System.out.println("Úspěšně jsi vyrobil Sekeru!");
+                        else System.out.println("Nemáš dost surovin na Sekeru (Kámen + Větve).");
+                        drawGame(gc);
                     }
-                    drawGame(gc);
-                }
-                if (event.getCode() == javafx.scene.input.KeyCode.G) {
-                    boolean success = player.getCraftingSystem().craftSpear(player.getInventory());
-                    if (success) {
-                        System.out.println("Úspěšně jsi vyrobil Oštěp!");
-                    } else {
-                        System.out.println("Nemáš dost surovin na Oštěp (Dřevo + Kámen).");
+                    case G -> {
+                        if (player.getCraftingSystem().craftSpear(player.getInventory())) System.out.println("Úspěšně jsi vyrobil Oštěp!");
+                        else System.out.println("Nemáš dost surovin na Oštěp (Dřevo + Kámen).");
+                        drawGame(gc);
                     }
-                    drawGame(gc);
-                }
-                if (event.getCode() == javafx.scene.input.KeyCode.T) {
-                    if (player.getCraftingSystem().craftSplinters(player.getInventory())) {
-                        System.out.println("Rozštípl jsi drevo 4 třísky");
+                    case T -> {
+                        if (player.getCraftingSystem().craftSplinters(player.getInventory())) System.out.println("Rozštípl jsi drevo 4 třísky");
+                        drawGame(gc);
                     }
-                    drawGame(gc);
-                }
-                if (event.getCode() == javafx.scene.input.KeyCode.O) {
-                    if (player.getCraftingSystem().craftFire(player.getInventory())) {
-                        System.out.println("ty žháři pomalu!");
+                    case O -> {
+                        if (player.getCraftingSystem().craftFire(player.getInventory())) System.out.println("ty žháři pomalu!");
+                        drawGame(gc);
                     }
-                    drawGame(gc);
-                }
-                if (event.getCode() == javafx.scene.input.KeyCode.P) {
-                    if (player.getCraftingSystem().craftCookedMeat(player.getInventory())) {
-                        System.out.println("uepkl si maso wow! ");
+                    case P -> {
+                        if (player.getCraftingSystem().craftCookedMeat(player.getInventory())) System.out.println("uepkl si maso wow! ");
+                        drawGame(gc);
                     }
-                    drawGame(gc);
                 }
                 return;
-
             }
 
             int dx = 0;
@@ -144,7 +127,6 @@ public class App extends Application {
             else if (event.getCode() == javafx.scene.input.KeyCode.S || event.getCode() == javafx.scene.input.KeyCode.DOWN) dy = 1;
             else if (event.getCode() == javafx.scene.input.KeyCode.A || event.getCode() == javafx.scene.input.KeyCode.LEFT) dx = -1;
             else if (event.getCode() == javafx.scene.input.KeyCode.D || event.getCode() == javafx.scene.input.KeyCode.RIGHT) dx = 1;
-
 
             if (dx != 0 || dy != 0) {
                 int targetX = player.getX() + dx;
@@ -164,12 +146,10 @@ public class App extends Application {
                     fullDialogue = null;
                     if (typingTimer != null) typingTimer.stop();
                 }
-
                 drawGame(gc);
-                return;
             }
             else if (event.getCode() == javafx.scene.input.KeyCode.E) {
-                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                List<trosecnik.inventory.Item> items = player.getInventory().getItems();
                 trosecnik.inventory.Item activeItem = null;
                 if (activeHotbarSlot < items.size()) {
                     activeItem = items.get(activeHotbarSlot);
@@ -184,7 +164,6 @@ public class App extends Application {
                         System.out.println("Fuj! Snědl jsi Syrové maso (+15 Hlad).");
                     }
                     if (player.getHunger() > 100) player.setHunger(100);
-
                     player.getInventory().removeItem(activeItem);
                 }
                 else {
@@ -215,41 +194,32 @@ public class App extends Application {
                 }
             }
         });
+
         scene.setOnMouseClicked(event -> {
             if (isPaused) {
                 double px = event.getX();
                 double py = event.getY();
 
                 if (px >= 300 && px <= 500 && py >= 400 && py <= 450) {
-                    System.out.println("Otevírám okno pro uložení...");
-
                     javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
                     fileChooser.setTitle("Vyber, kam chceš hru uložit");
                     fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
-
                     java.io.File file = fileChooser.showSaveDialog(primaryStage);
 
                     if (file != null) {
                         saveLoadManager.saveGame(file.getAbsolutePath(), player, gameMap);
-
                         isPaused = false;
                         if (timeThread != null) timeThread.setPaused(false);
                     }
                 }
-
                 else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
-                    System.out.println("Otevírám okno pro načtení...");
-
                     javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
                     fileChooser.setTitle("Vyber uloženou hru k načtení");
                     fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
-
                     java.io.File file = fileChooser.showOpenDialog(primaryStage);
 
                     if (file != null) {
-                        boolean loaded = saveLoadManager.loadGameState(file.getAbsolutePath(), player, gameMap);
-
-                        if (loaded) {
+                        if (saveLoadManager.loadGameState(file.getAbsolutePath(), player, gameMap)) {
                             isPaused = false;
                             if (timeThread != null) timeThread.setPaused(false);
                         }
@@ -261,153 +231,119 @@ public class App extends Application {
             int gridX = (int) (event.getX() / TILE_SIZE);
             int gridY = (int) (event.getY() / TILE_SIZE);
 
-            if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
-
+            if (!showInventory && gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
                 double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
-
-                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
-                String activeItemName = "Ruce";
-                if (activeHotbarSlot < items.size()) {
-                    activeItemName = items.get(activeHotbarSlot).getName();
-                }
+                List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                String activeItemName = (activeHotbarSlot < items.size()) ? items.get(activeHotbarSlot).getName() : "Ruce";
 
                 if (divocak != null && divocak.getHealth() > 0 && gridX == divocak.getX() && gridY == divocak.getY()) {
-
-                    double range = 1.5;
-                    int dmg = 10;
-
-                    if (activeItemName.equals("Oštěp")) {
-                        range = 2.5;
-                        dmg = 35;
-                    } else if (activeItemName.equals("Sekera")) {
-                        range = 1.5;
-                        dmg = 20;
-                    }
-
+                    double range = getWeaponRange(activeItemName);
+                    int dmg = getWeaponDamage(activeItemName);
 
                     if (distance <= range) {
                         divocak.takeDamage(dmg);
-                        System.out.println("ŠMIK! Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG! Praseti zbývá: " + divocak.getHealth() + " HP.");
-
+                        System.out.println("Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG!");
                         if (divocak.getHealth() <= 0) {
                             System.out.println("Prase padlo!");
                             gameMap.setTile(gridX, gridY, 'p');
                         }
                     } else {
-                        System.out.println("Máchl jsi do prázdna zbraní '" + activeItemName + "', prase je moc daleko!");
+                        System.out.println("Prase je moc daleko!");
                     }
-                    drawGame(gc);
-                }
-                char clickedTile = gameMap.getTile(gridX, gridY);
-
-                if (clickedTile == 'T') {
-                    if (activeItemName.equals("Sekera") && distance <= 1.5) {
-                        boolean destroyed = gameMap.chopTree(gridX, gridY);
-                        System.out.println("TŘÍSK! Sekáš strom.");
-                        if (destroyed) {
-                            System.out.println("Strom padl! Získal jsi Dřevo.");
-                            player.getInventory().addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
+                } else {
+                    char clickedTile = gameMap.getTile(gridX, gridY);
+                    if (clickedTile == 'T') {
+                        if (activeItemName.equals("Sekera") && distance <= 1.5) {
+                            if (gameMap.chopTree(gridX, gridY)) {
+                                System.out.println("Strom padl! Získal jsi Dřevo.");
+                                player.getInventory().addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
+                            }
+                        } else if (!activeItemName.equals("Sekera")) {
+                            System.out.println("Na strom potřebuješ Sekeru!");
+                        } else {
+                            System.out.println("Jsi moc daleko od stromu!");
                         }
-                    } else if (!activeItemName.equals("Sekera")) {
-                        System.out.println("Na strom potřebuješ Sekeru! Rukama ho nepokácíš.");
-                    } else {
-                        System.out.println("Jsi moc daleko od stromu!");
-                    }
-                }
-                else if (clickedTile == 'p') {
-                    double range = 1.5;
-                    int dmg = 10;
+                    } else if (clickedTile == 'p') {
+                        double range = activeItemName.equals("Oštěp") ? 2.5 : 1.5;
+                        int dmg = activeItemName.equals("Oštěp") ? 35 : (activeItemName.equals("Sekera") ? 20 : 10);
 
-                    if (activeItemName.equals("Oštěp")) {
-                        range = 2.5;
-                        dmg = 35;
-                    } else if (activeItemName.equals("Sekera")) {
-                        range = 1.5;
-                        dmg = 20;
-                    }
-
-                    if (distance <= range) {
-                        boolean destroyed = gameMap.huntPig(gridX, gridY, dmg);
-                        System.out.println("BUM! Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG!");
-                        if (destroyed) {
-                            System.out.println("Úspěšný lov! Získal jsi Syrové maso.");
-                            player.getInventory().addItem(new trosecnik.inventory.Item("Syrové maso", "Jídlo"));
+                        if (distance <= range) {
+                            if (gameMap.huntPig(gridX, gridY, dmg)) {
+                                System.out.println("Úspěšný lov! Získal jsi Syrové maso.");
+                                player.getInventory().addItem(new trosecnik.inventory.Item("Syrové maso", "Jídlo"));
+                            }
+                        } else {
+                            System.out.println("Prase je moc daleko!");
                         }
-                    } else {
-                        System.out.println("Prase je moc daleko na zbraň: " + activeItemName);
                     }
                 }
                 drawGame(gc);
+                return;
             }
 
-            double x = event.getX();
-            double y = event.getY();
+            if (showInventory) {
+                double x = event.getX();
+                double y = event.getY();
 
-            if (x >= 70 && x <= 340 && y >= 120 && y <= 390) {
-                int col = (int) ((x - 70) / 70);
-                int row = (int) ((y - 120) / 70);
-                int index = row * 4 + col;
+                if (x >= 70 && x <= 340 && y >= 120 && y <= 390) {
+                    int col = (int) ((x - 70) / 70);
+                    int row = (int) ((y - 120) / 70);
+                    int index = row * 4 + col;
 
-                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
-                if (index < items.size()) {
-                    trosecnik.inventory.Item clickedItem = items.get(index);
+                    List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                    if (index < items.size()) {
+                        trosecnik.inventory.Item clickedItem = items.get(index);
 
-                    if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY && clickedItem.getType().equals("Jídlo")) {
-                        player.eatFood();
-                    }
-                    else if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
-                        if (craftSlot1 == null) {
-                            craftSlot1 = clickedItem;
-                        } else if (craftSlot2 == null && clickedItem != craftSlot1) {
-                            craftSlot2 = clickedItem;
-                        } else {
-                            craftSlot1 = clickedItem;
-                            craftSlot2 = null;
+                        if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY && clickedItem.getType().equals("Jídlo")) {
+                            player.eatFood();
+                        } else if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
+                            if (craftSlot1 == null) {
+                                craftSlot1 = clickedItem;
+                            } else if (craftSlot2 == null && clickedItem != craftSlot1) {
+                                craftSlot2 = clickedItem;
+                            } else {
+                                craftSlot1 = clickedItem;
+                                craftSlot2 = null;
+                            }
                         }
                     }
-                    drawGame(gc);
                 }
-            }
 
-            if (x >= 400 && x <= 610 && y >= 260 && y <= 310) {
-                boolean success = false;
+                if (x >= 400 && x <= 610 && y >= 260 && y <= 310) {
+                    boolean success = false;
+                    if (craftSlot1 != null && craftSlot2 != null) {
+                        String s1 = craftSlot1.getName();
+                        String s2 = craftSlot2.getName();
 
-                if (craftSlot1 != null && craftSlot2 != null) {
-                    String s1 = craftSlot1.getName();
-                    String s2 = craftSlot2.getName();
-
-                    if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
-                        success = player.getCraftingSystem().craftAxe(player.getInventory());
-                    } else if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) {
-                        success = player.getCraftingSystem().craftSpear(player.getInventory());
-                    } else if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) {
-                        success = player.getCraftingSystem().craftFire(player.getInventory());
-                    } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
-                        success = player.getCraftingSystem().craftCookedMeat(player.getInventory());
+                        if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
+                            success = player.getCraftingSystem().craftAxe(player.getInventory());
+                        } else if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) {
+                            success = player.getCraftingSystem().craftSpear(player.getInventory());
+                        } else if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) {
+                            success = player.getCraftingSystem().craftFire(player.getInventory());
+                        } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
+                            success = player.getCraftingSystem().craftCookedMeat(player.getInventory());
+                        }
+                    } else if (craftSlot1 != null && craftSlot1.getName().equals("Dřevo")) {
+                        success = player.getCraftingSystem().craftSplinters(player.getInventory());
                     }
-                }
 
-                else if (craftSlot1 != null && craftSlot2 == null && craftSlot1.getName().equals("Dřevo")) {
-                    success = player.getCraftingSystem().craftSplinters(player.getInventory());
-                }
-
-                if (success) {
-                    System.out.println("Výroba úspěšná!");
-                    craftSlot1 = null;
-                    craftSlot2 = null;
-                } else {
-                    System.out.println("Z těchto surovin se nic vyrobit nedá.");
+                    if (success) {
+                        System.out.println("Výroba úspěšná!");
+                    } else {
+                        System.out.println("Z těchto surovin se nic vyrobit nedá.");
+                    }
                     craftSlot1 = null;
                     craftSlot2 = null;
                 }
                 drawGame(gc);
             }
         });
-        gameLoopTimer = new javafx.animation.AnimationTimer() {
+
+        var gameLoopTimer = new javafx.animation.AnimationTimer() {
             @Override
             public void handle(long now) {
                 if (!isPaused && divocak != null && divocak.getHealth() > 0) {
-
                     int pDx = player.getX() - divocak.getX();
                     int pDy = player.getY() - divocak.getY();
                     int distance = Math.abs(pDx) + Math.abs(pDy);
@@ -419,21 +355,14 @@ public class App extends Application {
                             lastBoarAttackTime = now;
                             drawGame(gc);
                         }
-                    }
-                    else {
+                    } else {
                         if (now - lastBoarMoveTime > 1_000_000_000L) {
                             boolean canSeePlayer = hasLineOfSight(divocak.getX(), divocak.getY(), player.getX(), player.getY());
 
-                            if (divocak.isAggroed()) {
-                                if (distance >= 5 || (!canSeePlayer && distance > 1)) {
-                                    divocak.setAggroed(false);
-                                    System.out.println("Prase tě ztratilo z dohledu a vrací se domů...");
-                                }
-                            } else {
-                                if (distance <= 3 && canSeePlayer) {
-                                    divocak.setAggroed(true);
-                                    System.out.println("Chro chro! Prase tě vidí a zaměřilo se na tebe!");
-                                }
+                            if (divocak.isAggroed() && (distance >= 5 || (!canSeePlayer && distance > 1))) {
+                                divocak.setAggroed(false);
+                            } else if (!divocak.isAggroed() && distance <= 3 && canSeePlayer) {
+                                divocak.setAggroed(true);
                             }
 
                             int targetDivX = divocak.getX();
@@ -441,31 +370,17 @@ public class App extends Application {
                             boolean moved = false;
 
                             if (divocak.isAggroed()) {
-                                int stepX = pDx > 0 ? 1 : (pDx < 0 ? -1 : 0);
-                                int stepY = pDy > 0 ? 1 : (pDy < 0 ? -1 : 0);
-
-                                if (Math.abs(pDx) > Math.abs(pDy)) {
-                                    if (stepX != 0 && isValidMove(targetDivX + stepX, targetDivY)) { targetDivX += stepX; moved = true; }
-                                    else if (stepY != 0 && isValidMove(targetDivX, targetDivY + stepY)) { targetDivY += stepY; moved = true; }
-                                } else {
-                                    if (stepY != 0 && isValidMove(targetDivX, targetDivY + stepY)) { targetDivY += stepY; moved = true; }
-                                    else if (stepX != 0 && isValidMove(targetDivX + stepX, targetDivY)) { targetDivX += stepX; moved = true; }
+                                int[] newPos = calculateAIPath(targetDivX, targetDivY, pDx, pDy);
+                                if (newPos[0] != targetDivX || newPos[1] != targetDivY) {
+                                    targetDivX = newPos[0]; targetDivY = newPos[1]; moved = true;
                                 }
                             } else {
                                 int hDx = divocak.getHomeX() - divocak.getX();
                                 int hDy = divocak.getHomeY() - divocak.getY();
-                                int distanceToHome = Math.abs(hDx) + Math.abs(hDy);
-
-                                if (distanceToHome > 2) {
-                                    int stepX = hDx > 0 ? 1 : (hDx < 0 ? -1 : 0);
-                                    int stepY = hDy > 0 ? 1 : (hDy < 0 ? -1 : 0);
-
-                                    if (Math.abs(hDx) > Math.abs(hDy)) {
-                                        if (stepX != 0 && isValidMove(targetDivX + stepX, targetDivY)) { targetDivX += stepX; moved = true; }
-                                        else if (stepY != 0 && isValidMove(targetDivX, targetDivY + stepY)) { targetDivY += stepY; moved = true; }
-                                    } else {
-                                        if (stepY != 0 && isValidMove(targetDivX, targetDivY + stepY)) { targetDivY += stepY; moved = true; }
-                                        else if (stepX != 0 && isValidMove(targetDivX + stepX, targetDivY)) { targetDivX += stepX; moved = true; }
+                                if (Math.abs(hDx) + Math.abs(hDy) > 2) {
+                                    int[] newPos = calculateAIPath(targetDivX, targetDivY, hDx, hDy);
+                                    if (newPos[0] != targetDivX || newPos[1] != targetDivY) {
+                                        targetDivX = newPos[0]; targetDivY = newPos[1]; moved = true;
                                     }
                                 } else {
                                     if (Math.random() < 0.3) {
@@ -491,10 +406,12 @@ public class App extends Application {
             }
         };
         gameLoopTimer.start();
+
         primaryStage.setTitle("Trosecnik");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+
         timeThread = new TimeThread(player, () -> drawGame(gc));
         timeThread.start();
     }
@@ -534,8 +451,7 @@ public class App extends Application {
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     gc.setFill(Color.SADDLEBROWN);
                     gc.fillRect(x * TILE_SIZE + 30, y * TILE_SIZE + 10, 20, 60);
-                }
-                else if (tile == 'p') {
+                } else if (tile == 'p') {
                     gc.setFill(Color.LIGHTGREEN);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     gc.setFill(Color.PINK);
@@ -546,11 +462,9 @@ public class App extends Application {
                         gc.setFill(Color.RED);
                         gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, 50, 5);
                         gc.setFill(Color.LIGHTGREEN);
-                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, (hp / 50.0) * 50,5);
+                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, (hp / 50.0) * 50, 5);
                     }
                 }
-
-
             }
         }
 
@@ -577,16 +491,9 @@ public class App extends Application {
 
         gc.setFill(Color.WHITE);
         gc.setFont(javafx.scene.text.Font.font("Arial", 24));
-
         gc.fillText("Životy: " + player.getHealth(), 20, 35);
 
-
-
-        if (player.getHunger() > 30) {
-            gc.setFill(Color.WHITE);
-        } else {
-            gc.setFill(Color.ORANGE);
-        }
+        gc.setFill(player.getHunger() > 30 ? Color.WHITE : Color.ORANGE);
         gc.fillText("Hlad: " + player.getHunger(), 20, 65);
 
         if (showInventory) {
@@ -598,15 +505,15 @@ public class App extends Application {
             gc.fillText("--- BATOH ---", 70, 90);
             gc.fillText("--- CRAFTING (1+1) ---", 400, 90);
 
-            java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+            List<trosecnik.inventory.Item> items = player.getInventory().getItems();
             int startX = 70;
             int startY = 120;
             int slotSize = 60;
             int padding = 10;
 
             for (int i = 0; i < 16; i++) {
-                int row = i / 4;
                 int col = i % 4;
+                int row = i / 4;
                 int x = startX + col * (slotSize + padding);
                 int y = startY + row * (slotSize + padding);
 
@@ -619,7 +526,6 @@ public class App extends Application {
                     gc.setFill(Color.BLACK);
                     gc.setFont(javafx.scene.text.Font.font("Arial", 12));
                     String name = items.get(i).getName();
-
                     String shortName = name.length() > 6 ? name.substring(0, 5) + "." : name;
                     gc.fillText(shortName, x + 5, y + 35);
                 }
@@ -639,7 +545,6 @@ public class App extends Application {
             }
 
             gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font("Arial", 30));
             gc.fillText("+", 495, 200);
 
             gc.setFill(Color.DARKGRAY);
@@ -647,12 +552,10 @@ public class App extends Application {
             gc.strokeRect(530, 150, 80, 80);
             if (craftSlot2 != null) {
                 gc.setFill(Color.BLACK);
-                gc.setFont(javafx.scene.text.Font.font("Arial", 14));
                 gc.fillText(craftSlot2.getName(), 535, 195);
             }
 
             gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font("Arial", 30));
             gc.fillText("=", 625, 200);
 
             gc.setFill(Color.rgb(40, 80, 40));
@@ -660,24 +563,7 @@ public class App extends Application {
             gc.setStroke(Color.LIGHTGREEN);
             gc.strokeRect(660, 150, 80, 80);
 
-            String previewName = "";
-            if (craftSlot1 != null) {
-                String s1 = craftSlot1.getName();
-                String s2 = (craftSlot2 != null) ? craftSlot2.getName() : "";
-
-                if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
-                    previewName = "Sekera";
-                } else if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) {
-                    previewName = "Oštěp";
-                } else if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) {
-                    previewName = "Oheň";
-                } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
-                    previewName = "Pečené maso";
-                } else if (s1.equals("Dřevo") && s2.equals("")) {
-                    previewName = "4x Tříska";
-                }
-            }
-
+            String previewName = getCraftingPreviewName();
             if (!previewName.isEmpty()) {
                 gc.setFill(Color.LIGHTGREEN);
                 gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 13));
@@ -698,10 +584,9 @@ public class App extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
             gc.fillText("Tip: Pro snězení jídla na něj klikni PRAVÝM tlačítkem v batohu.", 400, 350);
         }
+
         if (fullDialogue != null && domorodec != null) {
-
             String typedMessage = fullDialogue.substring(0, visibleChars);
-
             double barX = 0;
             double barY = 100;
             double barW = 10 * TILE_SIZE;
@@ -709,7 +594,6 @@ public class App extends Application {
 
             gc.setFill(Color.rgb(10, 10, 10, 0.9));
             gc.fillRect(barX, barY, barW, barH);
-
             gc.setFill(Color.YELLOW);
             gc.fillRect(barX, barY + barH - 5, barW, 5);
 
@@ -722,9 +606,9 @@ public class App extends Application {
 
             if (typedMessage.length() > maxChars) {
                 int splitIndex = fullDialogue.lastIndexOf(' ', maxChars);
-                if (splitIndex == -1 || splitIndex < typedMessage.length() / 2) splitIndex = maxChars; // Fallback
+                if (splitIndex == -1 || splitIndex < typedMessage.length() / 2) splitIndex = maxChars;
 
-                String line1 = "";
+                String line1;
                 String line2 = "";
 
                 if (visibleChars <= splitIndex) {
@@ -752,17 +636,13 @@ public class App extends Application {
             gc.setFill(Color.rgb(0, 0, 0, 0.6));
             gc.fillRect(startX - 15, startY - 15, totalWidth + 30, slotSize + 30);
 
-
-            java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+            List<trosecnik.inventory.Item> items = player.getInventory().getItems();
 
             for (int i = 0; i < hotbarSlots; i++) {
                 int x = startX + i * (slotSize + spacing);
-                int y = startY;
-
 
                 gc.setFill(Color.rgb(50, 50, 50, 0.9));
-                gc.fillRect(x, y, slotSize, slotSize);
-
+                gc.fillRect(x, startY, slotSize, slotSize);
 
                 if (i == activeHotbarSlot) {
                     gc.setStroke(Color.YELLOW);
@@ -771,12 +651,12 @@ public class App extends Application {
                     gc.setStroke(Color.WHITE);
                     gc.setLineWidth(2);
                 }
-                gc.strokeRect(x, y, slotSize, slotSize);
+                gc.strokeRect(x, startY, slotSize, slotSize);
                 gc.setLineWidth(1);
 
                 gc.setFill(Color.LIGHTGRAY);
                 gc.setFont(javafx.scene.text.Font.font("Arial", 12));
-                gc.fillText(String.valueOf(i + 1), x + 5, y + 15);
+                gc.fillText(String.valueOf(i + 1), x + 5, startY + 15);
 
                 if (i < items.size()) {
                     String name = items.get(i).getName();
@@ -784,10 +664,11 @@ public class App extends Application {
 
                     gc.setFill(Color.WHITE);
                     gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 12));
-                    gc.fillText(shortName, x + 5, y + 40);
+                    gc.fillText(shortName, x + 5, startY + 40);
                 }
             }
         }
+
         if (isPaused) {
             gc.setFill(Color.rgb(0, 0, 0, 0.7));
             gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
@@ -811,6 +692,45 @@ public class App extends Application {
             gc.fillText("NAČÍST HRU", 340, 502);
         }
     }
+
+    private double getWeaponRange(String weaponName) {
+        return weaponName.equals("Oštěp") ? 2.5 : 1.5;
+    }
+
+    private int getWeaponDamage(String weaponName) {
+        return switch (weaponName) {
+            case "Oštěp" -> 35;
+            case "Sekera" -> 20;
+            default -> 10;
+        };
+    }
+    private String getCraftingPreviewName() {
+        if (craftSlot1 == null) return "";
+        String s1 = craftSlot1.getName();
+        String s2 = (craftSlot2 != null) ? craftSlot2.getName() : "";
+
+        if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) return "Sekera";
+        if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) return "Oštěp";
+        if ((s1.equals("Tříska") && s2.equals("Kámen")) || (s2.equals("Tříska") && s1.equals("Kámen"))) return "Oheň";
+        if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) return "Pečené maso";
+        if (s1.equals("Dřevo") && s2.isEmpty()) return "4x Tříska";
+        return "";
+    }
+
+    private int[] calculateAIPath(int currentX, int currentY, int dx, int dy) {
+        int stepX = Integer.compare(dx, 0);
+        int stepY = Integer.compare(dy, 0);
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (stepX != 0 && isValidMove(currentX + stepX, currentY)) return new int[]{currentX + stepX, currentY};
+            if (stepY != 0 && isValidMove(currentX, currentY + stepY)) return new int[]{currentX, currentY + stepY};
+        } else {
+            if (stepY != 0 && isValidMove(currentX, currentY + stepY)) return new int[]{currentX, currentY + stepY};
+            if (stepX != 0 && isValidMove(currentX + stepX, currentY)) return new int[]{currentX + stepX, currentY};
+        }
+        return new int[]{currentX, currentY};
+    }
+
     @Override
     public void stop() {
         if (timeThread != null) {
@@ -818,22 +738,22 @@ public class App extends Application {
             System.out.println("ende");
         }
     }
+
     public static void main(String[] args) {
         launch(args);
     }
 
     private boolean isValidMove(int x, int y) {
-        if (!gameMap.isWalkable(x, y)) return false; // Není to tráva
-        if (x == player.getX() && y == player.getY()) return false; // Stojí tam hráč
-        if (domorodec != null && x == domorodec.getX() && y == domorodec.getY()) return false; // Stojí tam Pátek
-        return true;
+        if (!gameMap.isWalkable(x, y)) return false;
+        if (x == player.getX() && y == player.getY()) return false;
+        return domorodec == null || x != domorodec.getX() || y != domorodec.getY();
     }
 
     private boolean hasLineOfSight(int x1, int y1, int x2, int y2) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
+        int sx = Integer.compare(x2, x1);
+        int sy = Integer.compare(y2, y1);
         int err = dx - dy;
 
         int currentX = x1;
@@ -841,9 +761,7 @@ public class App extends Application {
 
         while (true) {
             if ((currentX != x1 || currentY != y1) && (currentX != x2 || currentY != y2)) {
-                if (!gameMap.isWalkable(currentX, currentY)) {
-                    return false;
-                }
+                if (!gameMap.isWalkable(currentX, currentY)) return false;
             }
             if (currentX == x2 && currentY == y2) break;
 
