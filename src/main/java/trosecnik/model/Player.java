@@ -44,32 +44,17 @@ public class Player extends Entity {
         if (currentTile == 'k') {
             inventory.addItem(new trosecnik.inventory.Item("Kámen", "Surovina"));
             gameMap.setTile(x, y, '.');
-            System.out.println("Sebral Kamen");
+            System.out.println("Sebral Kámen");
 
         } else if (currentTile == 'v') {
             inventory.addItem(new trosecnik.inventory.Item("Větve", "Surovina"));
             gameMap.setTile(x, y, '.');
-            System.out.println("Sebral Vetve");
+            System.out.println("Sebral Větve");
         } else {
-            boolean actionDone = false;
-
-            if (inventory.hasItemByName("Sekera")) {
-                if (tryChop(x, y - 1) || tryChop(x, y + 1) || tryChop(x - 1, y) || tryChop(x + 1, y)) {
-                    actionDone = true;
-                }
-            }
-
-            if (!actionDone && inventory.hasItemByName("Oštěp")) {
-                if (tryHunt(x, y - 1) || tryHunt(x, y + 1) || tryHunt(x - 1, y) || tryHunt(x + 1, y)) {
-                    actionDone = true;
-                }
-            }
-
-            if (!actionDone) {
-                System.out.println("pod dubem za dubem nic neni test3");
-            }
+            System.out.println("Na zemi tady nic k sebrání není.");
         }
     }
+
     private boolean tryChop(int targetX, int targetY) {
         if (gameMap.getTile(targetX, targetY) == 'T') {
             System.out.println("CHOPAAAAAAAAAAAAAAA!");

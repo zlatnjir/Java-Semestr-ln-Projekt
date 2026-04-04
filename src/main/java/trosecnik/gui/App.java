@@ -150,20 +150,16 @@ public class App extends Application {
                 int targetX = player.getX() + dx;
                 int targetY = player.getY() + dy;
 
-                // 1. Kolize s Pátkem
                 if (domorodec != null && targetX == domorodec.getX() && targetY == domorodec.getY()) {
                     System.out.println("Bum! Narazil jsi do " + domorodec.getName());
                 }
-                // 2. Kolize s Prasetem (UŽ NEÚTOČÍME, JEN NARÁŽÍME)
                 else if (divocak != null && divocak.getHealth() > 0 && targetX == divocak.getX() && targetY == divocak.getY()) {
                     System.out.println("Narazil jsi do divočáka! K útoku použij myš!");
                 }
-                // 3. Normální pohyb (pokud je políčko volné)
                 else {
                     player.move(dx, dy);
                 }
 
-                // Pokud hráč udělá krok, dialog vždy zmizí
                 if (fullDialogue != null) {
                     fullDialogue = null;
                     if (typingTimer != null) typingTimer.stop();
@@ -247,52 +243,86 @@ public class App extends Application {
                 return;
             }
 
-            // A) Převod pixelů myši na políčka mřížky
             int gridX = (int) (event.getX() / TILE_SIZE);
             int gridY = (int) (event.getY() / TILE_SIZE);
 
-            // B) Kontrola, jestli hráč neklikl mimo mapu
             if (gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
 
-                // C) Výpočet vzdálenosti jako KRUHOVÝ RÁDIUS (Euklidovská vzdálenost)
                 double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
 
-                // --- D) Zjistíme, co hráč právě drží v ruce (podle Hotbaru) ---
                 java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
-                String activeItemName = "Ruce"; // Výchozí zbraň
+                String activeItemName = "Ruce";
                 if (activeHotbarSlot < items.size()) {
                     activeItemName = items.get(activeHotbarSlot).getName();
                 }
 
-                // --- E) ÚTOK NA NEPŘÍTELE ---
-                // Pokud hráč kliknul PŘESNĚ na políčko, kde stojí živé prase
                 if (divocak != null && divocak.getHealth() > 0 && gridX == divocak.getX() && gridY == divocak.getY()) {
 
-                    double range = 1.5; // Dosah pro holé ruce
+                    double range = 1.5;
                     int dmg = 10;
 
                     if (activeItemName.equals("Oštěp")) {
-                        range = 2.5; // Oštěp dosáhne dál! (i šikmo)
+                        range = 2.5;
                         dmg = 35;
                     } else if (activeItemName.equals("Sekera")) {
-                        range = 1.5; // Sekera je na blízko
+                        range = 1.5;
                         dmg = 20;
                     }
 
-                    // Zkontrolujeme, jestli je cíl v dosahu naší zbraně
+
                     if (distance <= range) {
                         divocak.takeDamage(dmg);
                         System.out.println("ŠMIK! Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG! Praseti zbývá: " + divocak.getHealth() + " HP.");
 
                         if (divocak.getHealth() <= 0) {
                             System.out.println("Prase padlo!");
-                            gameMap.setTile(gridX, gridY, 'p'); // Proměníme ho na těžitelné maso
+                            gameMap.setTile(gridX, gridY, 'p');
                         }
                     } else {
                         System.out.println("Máchl jsi do prázdna zbraní '" + activeItemName + "', prase je moc daleko!");
                     }
                     drawGame(gc);
                 }
+                char clickedTile = gameMap.getTile(gridX, gridY);
+
+                if (clickedTile == 'T') {
+                    if (activeItemName.equals("Sekera") && distance <= 1.5) {
+                        boolean destroyed = gameMap.chopTree(gridX, gridY);
+                        System.out.println("TŘÍSK! Sekáš strom.");
+                        if (destroyed) {
+                            System.out.println("Strom padl! Získal jsi Dřevo.");
+                            player.getInventory().addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
+                        }
+                    } else if (!activeItemName.equals("Sekera")) {
+                        System.out.println("Na strom potřebuješ Sekeru! Rukama ho nepokácíš.");
+                    } else {
+                        System.out.println("Jsi moc daleko od stromu!");
+                    }
+                }
+                else if (clickedTile == 'p') {
+                    double range = 1.5;
+                    int dmg = 10;
+
+                    if (activeItemName.equals("Oštěp")) {
+                        range = 2.5;
+                        dmg = 35;
+                    } else if (activeItemName.equals("Sekera")) {
+                        range = 1.5;
+                        dmg = 20;
+                    }
+
+                    if (distance <= range) {
+                        boolean destroyed = gameMap.huntPig(gridX, gridY, dmg);
+                        System.out.println("BUM! Zásah zbraní '" + activeItemName + "' za " + dmg + " DMG!");
+                        if (destroyed) {
+                            System.out.println("Úspěšný lov! Získal jsi Syrové maso.");
+                            player.getInventory().addItem(new trosecnik.inventory.Item("Syrové maso", "Jídlo"));
+                        }
+                    } else {
+                        System.out.println("Prase je moc daleko na zbraň: " + activeItemName);
+                    }
+                }
+                drawGame(gc);
             }
 
             double x = event.getX();
@@ -400,7 +430,6 @@ public class App extends Application {
                                 int stepY = pDy > 0 ? 1 : (pDy < 0 ? -1 : 0);
 
                                 if (Math.abs(pDx) > Math.abs(pDy)) {
-                                    // Zkusí jít primárně v ose X, když to nejde (překážka), zkusí to obklouznout v ose Y!
                                     if (stepX != 0 && isValidMove(targetDivX + stepX, targetDivY)) { targetDivX += stepX; moved = true; }
                                     else if (stepY != 0 && isValidMove(targetDivX, targetDivY + stepY)) { targetDivY += stepY; moved = true; }
                                 } else {
@@ -469,6 +498,14 @@ public class App extends Application {
                 } else if (tile == 'T') {
                     gc.setFill(Color.DARKGREEN);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                    int hp = gameMap.getTreeHealth(x, y);
+                    if (hp < 3) {
+                        gc.setFill(Color.RED);
+                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, 50, 5);
+                        gc.setFill(Color.LIGHTGREEN);
+                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, (hp / 3.0) * 50, 5);
+                    }
                 } else if (tile == 'R') {
                     gc.setFill(Color.GRAY);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -488,6 +525,14 @@ public class App extends Application {
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     gc.setFill(Color.PINK);
                     gc.fillRoundRect(x * TILE_SIZE + 10, y * TILE_SIZE + 20, 60, 40, 15, 15);
+
+                    int hp = gameMap.getPigHealth(x, y);
+                    if (hp < 50) {
+                        gc.setFill(Color.RED);
+                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, 50, 5);
+                        gc.setFill(Color.LIGHTGREEN);
+                        gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, (hp / 50.0) * 50,5);
+                    }
                 }
 
 

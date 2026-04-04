@@ -7,6 +7,7 @@ public class GameMap {
     private int height;
     private char[][] tiles;
     private Map<String, Integer> treeHealth = new HashMap<>();
+    private Map<String, Integer> pigHealth = new HashMap<>();
 
     public GameMap(int width, int height) {
         this.width = width;
@@ -60,6 +61,29 @@ public class GameMap {
         } else {
             treeHealth.put(key, health);
             System.out.println("jeste zbyva [" + key + "]: " + health);
+            return false;
+        }
+    }
+    public int getTreeHealth(int x, int y) {
+        return treeHealth.getOrDefault(x + "," + y, 3);
+    }
+
+    public int getPigHealth(int x, int y) {
+        return pigHealth.getOrDefault(x + "," + y, 50);
+    }
+
+    public boolean huntPig(int x, int y, int damage) {
+        String key = x + "," + y;
+        int health = pigHealth.getOrDefault(key, 50);
+        health -= damage;
+
+        if (health <= 0) {
+            setTile(x, y, '.');
+            pigHealth.remove(key);
+            return true;
+        } else {
+            pigHealth.put(key, health);
+            System.out.println("Kvík! Prase dostalo zásah, zbývá HP: " + health);
             return false;
         }
     }
