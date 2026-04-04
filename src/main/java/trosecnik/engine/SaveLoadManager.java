@@ -57,7 +57,7 @@ public class SaveLoadManager {
             writer.println(player.getHealth());
             writer.println(player.getHunger());
             for (trosecnik.inventory.Item item : player.getInventory().getItems()) {
-                writer.println(item.getName() + ";" + item.getType());
+                writer.println(item.name() + ";" + item.type());
             }
 
             writer.println("---MAPA---");

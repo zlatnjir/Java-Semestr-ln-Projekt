@@ -155,11 +155,11 @@ public class App extends Application {
                     activeItem = items.get(activeHotbarSlot);
                 }
 
-                if (activeItem != null && activeItem.getType().equals("Jídlo")) {
-                    if (activeItem.getName().equals("Pečené maso")) {
+                if (activeItem != null && activeItem.type().equals("Jídlo")) {
+                    if (activeItem.name().equals("Pečené maso")) {
                         player.setHunger(player.getHunger() + 50);
                         System.out.println("Mňam! Snědl jsi Pečené maso (+50 Hlad).");
-                    } else if (activeItem.getName().equals("Syrové maso")) {
+                    } else if (activeItem.name().equals("Syrové maso")) {
                         player.setHunger(player.getHunger() + 15);
                         System.out.println("Fuj! Snědl jsi Syrové maso (+15 Hlad).");
                     }
@@ -234,7 +234,7 @@ public class App extends Application {
             if (!showInventory && gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
                 double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
                 List<trosecnik.inventory.Item> items = player.getInventory().getItems();
-                String activeItemName = (activeHotbarSlot < items.size()) ? items.get(activeHotbarSlot).getName() : "Ruce";
+                String activeItemName = (activeHotbarSlot < items.size()) ? items.get(activeHotbarSlot).name() : "Ruce";
 
                 if (divocak != null && divocak.getHealth() > 0 && gridX == divocak.getX() && gridY == divocak.getY()) {
                     double range = getWeaponRange(activeItemName);
@@ -294,7 +294,7 @@ public class App extends Application {
                     if (index < items.size()) {
                         trosecnik.inventory.Item clickedItem = items.get(index);
 
-                        if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY && clickedItem.getType().equals("Jídlo")) {
+                        if (event.getButton() == javafx.scene.input.MouseButton.SECONDARY && clickedItem.type().equals("Jídlo")) {
                             player.eatFood();
                         } else if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY) {
                             if (craftSlot1 == null) {
@@ -312,8 +312,8 @@ public class App extends Application {
                 if (x >= 400 && x <= 610 && y >= 260 && y <= 310) {
                     boolean success = false;
                     if (craftSlot1 != null && craftSlot2 != null) {
-                        String s1 = craftSlot1.getName();
-                        String s2 = craftSlot2.getName();
+                        String s1 = craftSlot1.name();
+                        String s2 = craftSlot2.name();
 
                         if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) {
                             success = player.getCraftingSystem().craftAxe(player.getInventory());
@@ -324,7 +324,7 @@ public class App extends Application {
                         } else if ((s1.equals("Oheň") && s2.equals("Syrové maso")) || (s2.equals("Oheň") && s1.equals("Syrové maso"))) {
                             success = player.getCraftingSystem().craftCookedMeat(player.getInventory());
                         }
-                    } else if (craftSlot1 != null && craftSlot1.getName().equals("Dřevo")) {
+                    } else if (craftSlot1 != null && craftSlot1.name().equals("Dřevo")) {
                         success = player.getCraftingSystem().craftSplinters(player.getInventory());
                     }
 
@@ -525,7 +525,7 @@ public class App extends Application {
                 if (i < items.size()) {
                     gc.setFill(Color.BLACK);
                     gc.setFont(javafx.scene.text.Font.font("Arial", 12));
-                    String name = items.get(i).getName();
+                    String name = items.get(i).name();
                     String shortName = name.length() > 6 ? name.substring(0, 5) + "." : name;
                     gc.fillText(shortName, x + 5, y + 35);
                 }
@@ -541,7 +541,7 @@ public class App extends Application {
             if (craftSlot1 != null) {
                 gc.setFill(Color.BLACK);
                 gc.setFont(javafx.scene.text.Font.font("Arial", 14));
-                gc.fillText(craftSlot1.getName(), 405, 195);
+                gc.fillText(craftSlot1.name(), 405, 195);
             }
 
             gc.setFill(Color.WHITE);
@@ -552,7 +552,7 @@ public class App extends Application {
             gc.strokeRect(530, 150, 80, 80);
             if (craftSlot2 != null) {
                 gc.setFill(Color.BLACK);
-                gc.fillText(craftSlot2.getName(), 535, 195);
+                gc.fillText(craftSlot2.name(), 535, 195);
             }
 
             gc.setFill(Color.WHITE);
@@ -659,7 +659,7 @@ public class App extends Application {
                 gc.fillText(String.valueOf(i + 1), x + 5, startY + 15);
 
                 if (i < items.size()) {
-                    String name = items.get(i).getName();
+                    String name = items.get(i).name();
                     String shortName = name.length() > 6 ? name.substring(0, 5) + "." : name;
 
                     gc.setFill(Color.WHITE);
@@ -706,8 +706,8 @@ public class App extends Application {
     }
     private String getCraftingPreviewName() {
         if (craftSlot1 == null) return "";
-        String s1 = craftSlot1.getName();
-        String s2 = (craftSlot2 != null) ? craftSlot2.getName() : "";
+        String s1 = craftSlot1.name();
+        String s2 = (craftSlot2 != null) ? craftSlot2.name() : "";
 
         if ((s1.equals("Kámen") && s2.equals("Větve")) || (s2.equals("Kámen") && s1.equals("Větve"))) return "Sekera";
         if ((s1.equals("Dřevo") && s2.equals("Kámen")) || (s2.equals("Dřevo") && s1.equals("Kámen"))) return "Oštěp";

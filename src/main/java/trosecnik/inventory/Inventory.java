@@ -12,14 +12,14 @@ public class Inventory {
     }
     public boolean hasItemByName(String name) {
         for (Item item : items) {
-            if (item.getName().equals(name)) return true;
+            if (item.name().equals(name)) return true;
         }
         return false;
     }
 
     public void removeItemByName(String name) {
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i).getName().equals(name)) {
+            if (items.get(i).name().equals(name)) {
                 items.remove(i);
                 break;
             }
