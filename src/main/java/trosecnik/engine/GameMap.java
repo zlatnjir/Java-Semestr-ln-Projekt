@@ -3,11 +3,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GameMap {
-    private int width;
-    private int height;
-    private char[][] tiles;
-    private Map<String, Integer> treeHealth = new HashMap<>();
-    private Map<String, Integer> pigHealth = new HashMap<>();
+    private final int width;
+    private  final int height;
+    private  final char[][] tiles;
+    private final Map<String, Integer> treeHealth = new HashMap<>();
+    private final Map<String, Integer> pigHealth = new HashMap<>();
 
     public GameMap(int width, int height) {
         this.width = width;
