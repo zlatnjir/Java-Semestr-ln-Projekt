@@ -1,20 +1,18 @@
 package trosecnik.model;
 
 public class NPC extends Entity {
-    private String dialogueMessage;
-    private boolean isHostile;
+    private final String dialogueMessage;
     private int health;
 
-    private int homeX;
-    private int homeY;
+    private final int homeX;
+    private final int homeY;
     private boolean isAggroed;
 
-    public NPC(String name, int startX, int startY, String dialogueMessage, boolean isHostile) {
+    public NPC(String name, int startX, int startY, String dialogueMessage) {
         this.name = name;
         this.x = startX;
         this.y = startY;
         this.dialogueMessage = dialogueMessage;
-        this.isHostile = isHostile;
         this.health = 50;
 
         this.homeX = startX;
@@ -23,7 +21,6 @@ public class NPC extends Entity {
     }
 
     public String getDialogueMessage() { return dialogueMessage; }
-    public boolean isHostile() { return isHostile; }
     public String getName() { return name; }
     public int getHealth() { return health; }
 

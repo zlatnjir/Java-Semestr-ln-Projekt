@@ -44,8 +44,8 @@ public class App extends Application {
 
         if (gameMap != null) {
             player = new Player("Trosečník", 2, 1, gameMap);
-            domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!", false);
-            divocak = new trosecnik.model.NPC("Divoké prase", 2, 6, "", true);
+            domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!");
+            divocak = new trosecnik.model.NPC("Divoké prase", 2, 6, "");
         } else {
             System.out.println("Kritická chyba: Mapa se nenačetla!");
             return;
