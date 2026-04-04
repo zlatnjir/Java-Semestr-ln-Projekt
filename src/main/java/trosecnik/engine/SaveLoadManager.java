@@ -28,7 +28,7 @@ public class SaveLoadManager {
             reader.close();
 
             int height = lines.size();
-            int width = lines.isEmpty() ? 0 : lines.get(0).length();
+            int width = lines.isEmpty() ? 0 : lines.getFirst().length();
 
             GameMap map = new GameMap(width, height);
 
@@ -69,7 +69,7 @@ public class SaveLoadManager {
                 for (int x = 0; x < map.getWidth(); x++) {
                     row.append(map.getTile(x, y));
                 }
-                writer.println(row.toString());
+                writer.println(row);
             }
 
             writer.close();
@@ -97,8 +97,8 @@ public class SaveLoadManager {
             while ((line = reader.readLine()) != null) {
                 if (line.equals("---MAPA---")) {
                     readingMap = true;
-                    int savedWidth = Integer.parseInt(reader.readLine());
-                    int savedHeight = Integer.parseInt(reader.readLine());
+                    reader.readLine();
+                    reader.readLine();
                     continue;
                 }
 
