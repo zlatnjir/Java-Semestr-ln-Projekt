@@ -4,15 +4,14 @@ import trosecnik.engine.GameMap;
 import trosecnik.inventory.CraftingSystem;
 import trosecnik.inventory.Inventory;
 
-
 public class Player extends Entity {
 
     private int health = 100;
     private int hunger = 100;
 
-    private Inventory inventory;
-    private CraftingSystem craftingSystem;
-    private GameMap gameMap;
+    private final Inventory inventory;
+    private final CraftingSystem craftingSystem;
+    private final GameMap gameMap;
 
     public Player(String name, int startX, int startY, GameMap map) {
         this.name = name;
@@ -55,29 +54,6 @@ public class Player extends Entity {
         }
     }
 
-    private boolean tryChop(int targetX, int targetY) {
-        if (gameMap.getTile(targetX, targetY) == 'T') {
-            System.out.println("CHOPAAAAAAAAAAAAAAA!");
-            boolean destroyed = gameMap.chopTree(targetX, targetY);
-
-            if (destroyed) {
-                System.out.println("sundal si strom wp");
-                inventory.addItem(new trosecnik.inventory.Item("Dřevo", "Surovina"));
-            }
-            return true;
-        }
-        return false;
-    }
-    private boolean tryHunt(int targetX, int targetY) {
-        if (gameMap.getTile(targetX, targetY) == 'p') {
-            System.out.println("BOD! (Útočíš na prase...)");
-            gameMap.setTile(targetX, targetY, '.'); // Prase z mapy zmizí po jedné ráně
-            inventory.addItem(new trosecnik.inventory.Item("Syrové maso", "Jídlo"));
-            System.out.println("Úspěšný lov! Získal jsi Syrové maso!");
-            return true;
-        }
-        return false;
-    }
     public void decreaseHunger(int amount) {
         if (this.hunger > 0) {
             this.hunger -= amount;
@@ -94,6 +70,7 @@ public class Player extends Entity {
             }
         }
     }
+
     public void eatFood() {
         if (inventory.hasItemByName("Pečené maso")) {
             inventory.removeItemByName("Pečené maso");
