@@ -175,27 +175,24 @@ public class App extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 75));
             gc.fillText("TROSEČNÍK", 170, 250);
 
-            gc.setFill(Color.ORANGE);
-            gc.fillRect(250, 360, 300, 60);
-            gc.setStroke(Color.WHITE);
-            gc.setLineWidth(3);
-            gc.strokeRect(250, 360, 300, 60);
-            gc.setLineWidth(1);
+            String[] menuBtns = {"Nová hra", "Načíst hru", "Ukončit hru"};
+            for (int i = 0; i < 3; i++) {
+                gc.setFill(Color.DARKGRAY);
+                gc.fillRect(250, 350 + (i * 70), 300, 50);
+                gc.setStroke(Color.WHITE);
+                gc.strokeRect(250, 350 + (i * 70), 300, 50);
 
-            gc.setFill(Color.BLACK);
-            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 24));
-            gc.fillText("Stiskni ENTER pro start", 265, 400);
-
-
-            gc.setFill(Color.GRAY);
-            gc.setFont(javafx.scene.text.Font.font("Arial", 15));
+                gc.setFill(Color.WHITE);
+                gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
+                double textX = 250 + (i == 0 ? 105 : (i == 1 ? 95 : 90));
+                gc.fillText(menuBtns[i], textX, 382 + (i * 70));
+            }
             return;
         }
 
         if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
             gc.setFill(Color.rgb(40, 0, 0));
             gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
-
             gc.setFill(Color.RED);
             gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 80));
             gc.fillText("ZEMŘEL JSI", 170, 280);
@@ -204,16 +201,18 @@ public class App extends Application {
             gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontPosture.ITALIC, 25));
             gc.fillText("Ostrov si vyžádal další oběť...", 230, 340);
 
-            gc.setFill(Color.DARKGRAY);
-            gc.fillRect(250, 420, 300, 50);
-            gc.setStroke(Color.RED);
-            gc.setLineWidth(2);
-            gc.strokeRect(250, 420, 300, 50);
-            gc.setLineWidth(1);
+            String[] overBtns = {"Hlavní nabídka", "Ukončit hru"};
+            for (int i = 0; i < 2; i++) {
+                gc.setFill(Color.DARKGRAY);
+                gc.fillRect(250, 420 + (i * 70), 300, 50);
+                gc.setStroke(Color.RED);
+                gc.strokeRect(250, 420 + (i * 70), 300, 50);
 
-            gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
-            gc.fillText("Stiskni 'R' pro RESTART", 285, 452);
+                gc.setFill(Color.WHITE);
+                gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
+                double textX = 250 + (i == 0 ? 70 : 90);
+                gc.fillText(overBtns[i], textX, 452 + (i * 70));
+            }
             return;
         }
 
@@ -489,7 +488,7 @@ public class App extends Application {
             gc.setFill(Color.DARKGRAY);
             gc.fillRect(300, 470, 200, 50);
             gc.setFill(Color.WHITE);
-            gc.fillText("NAČÍST HRU", 340, 502);
+            gc.fillText("HLAVNÍ NABÍDKA", 315, 502);
         }
     }
 
@@ -624,6 +623,7 @@ public class App extends Application {
 
         timeThread = new TimeThread(player, () -> requestDraw());
         timeThread.start();
+        timeThread.setPaused(true);
         gameStateManager.setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
         requestDraw();
     }

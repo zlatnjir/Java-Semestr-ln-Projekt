@@ -18,17 +18,10 @@ public class InputHandler {
         var GameState = trosecnik.engine.GameStateManager.GameState.class;
 
         if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU) {
-            if (event.getCode() == javafx.scene.input.KeyCode.ENTER) {
-                app.getGameStateManager().setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
-                app.requestDraw();
-            }
             return;
         }
 
         if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
-            if (event.getCode() == javafx.scene.input.KeyCode.R) {
-                app.resetGame();
-            }
             return;
         }
 
@@ -149,37 +142,67 @@ public class InputHandler {
     }
 
     public void handleMouseClicked(MouseEvent event, App app, Player player, NPC divocak, GameMap gameMap, SaveLoadManager saveLoadManager, javafx.stage.Stage primaryStage) {
+
         var state = app.getGameStateManager().getCurrentState();
-        if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU || state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
-            return;
-        }
-        if (app.isPaused()) {
-            double px = event.getX();
-            double py = event.getY();
+        double px = event.getX();
+        double py = event.getY();
 
-            if (px >= 300 && px <= 500 && py >= 400 && py <= 450) {
-                javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
-                fileChooser.setTitle("Vyber, kam chceš hru uložit");
-                fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
-                java.io.File file = fileChooser.showSaveDialog(primaryStage);
+        if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU) {
+            if (px >= 250 && px <= 550) {
+                if (py >= 350 && py <= 400) {
+                    app.resetGame();
+                } else if (py >= 420 && py <= 470) {
+                    javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+                    fileChooser.setTitle("Vyber uloženou hru k načtení");
+                    fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
+                    java.io.File file = fileChooser.showOpenDialog(primaryStage);
 
-                if (file != null) {
-                    saveLoadManager.saveGame(file.getAbsolutePath(), player, gameMap);
-                    app.setPaused(false);
-                    if (app.getTimeThread() != null) app.getTimeThread().setPaused(false);
+                    if (file != null) {
+                        if (saveLoadManager.loadGameState(file.getAbsolutePath(), player, gameMap)) {
+                            app.getGameStateManager().setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
+                            if (app.getTimeThread() != null) app.getTimeThread().setPaused(false);
+                            app.requestDraw();
+                        }
+                    }
+                } else if (py >= 490 && py <= 540) {
+                    System.exit(0);
                 }
             }
-            else if (px >= 300 && px <= 500 && py >= 470 && py <= 520) {
-                javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
-                fileChooser.setTitle("Vyber uloženou hru k načtení");
-                fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
-                java.io.File file = fileChooser.showOpenDialog(primaryStage);
+            return;
+        }
 
-                if (file != null) {
-                    if (saveLoadManager.loadGameState(file.getAbsolutePath(), player, gameMap)) {
+        if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+            if (px >= 250 && px <= 650) {
+                if (py >= 420 && py <= 470) {
+                    if (app.getTimeThread() != null) app.getTimeThread().setPaused(true);
+                    app.getGameStateManager().setState(trosecnik.engine.GameStateManager.GameState.MAIN_MENU);
+                    app.requestDraw();
+                } else if (py >= 490 && py <= 540) {
+                    System.exit(0);
+                }
+            }
+            return;
+        }
+
+        if (app.isPaused()) {
+            if (px >= 300 && px <= 500) {
+                if (py >= 400 && py <= 450) {
+                    javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+                    fileChooser.setTitle("Vyber, kam chceš hru uložit");
+                    fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Textové soubory (*.txt)", "*.txt"));
+                    java.io.File file = fileChooser.showSaveDialog(primaryStage);
+
+                    if (file != null) {
+                        saveLoadManager.saveGame(file.getAbsolutePath(), player, gameMap);
                         app.setPaused(false);
                         if (app.getTimeThread() != null) app.getTimeThread().setPaused(false);
+                        app.requestDraw();
                     }
+                } else if (py >= 470 && py <= 520) {
+                    app.setPaused(false);
+                    if (app.getTimeThread() != null) app.getTimeThread().setPaused(true);
+                    app.getGameStateManager().setState(trosecnik.engine.GameStateManager.GameState.MAIN_MENU);
+                    app.requestDraw();
                 }
             }
             return;
