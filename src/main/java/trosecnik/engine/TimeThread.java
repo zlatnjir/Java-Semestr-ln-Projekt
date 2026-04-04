@@ -5,10 +5,10 @@ import trosecnik.model.Player;
 
 public class TimeThread extends Thread {
 
-    private boolean isRunning = true;
-    private boolean isPaused = false; // Nová paměť pro pauzu
-    private Player player;
-    private Runnable onTick;
+    private volatile boolean isRunning = true;
+    private volatile boolean isPaused = false;
+    private final Player player;
+    private final Runnable onTick;
 
     public TimeThread(Player player, Runnable onTick) {
         this.player = player;
@@ -23,6 +23,7 @@ public class TimeThread extends Thread {
         this.isPaused = paused;
     }
 
+    @SuppressWarnings("BusyWait")
     @Override
     public void run() {
         System.out.println("Vlákno času spuštěno! Tik... ťak...");
@@ -41,6 +42,7 @@ public class TimeThread extends Thread {
                 }
             } catch (InterruptedException e) {
                 System.out.println("Vlákno času bylo přerušeno.");
+                Thread.currentThread().interrupt();
                 break;
             }
         }
