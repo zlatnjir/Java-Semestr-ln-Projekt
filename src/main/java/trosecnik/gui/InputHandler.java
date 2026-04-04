@@ -26,6 +26,9 @@ public class InputHandler {
         }
 
         if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+            if (event.getCode() == javafx.scene.input.KeyCode.R) {
+                app.resetGame();
+            }
             return;
         }
 

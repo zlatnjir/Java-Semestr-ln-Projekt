@@ -160,23 +160,60 @@ public class App extends Application {
 
     private void drawGame(GraphicsContext gc) {
         var state = gameStateManager.getCurrentState();
+
         if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU) {
-            gc.setFill(Color.rgb(20, 20, 50));
+            for (int y = 0; y < 8; y++) {
+                for (int x = 0; x < 10; x++) {
+                    gc.setFill((x + y) % 2 == 0 ? Color.DARKGREEN : Color.OLIVEDRAB);
+                    gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                }
+            }
+            gc.setFill(Color.rgb(0, 0, 0, 0.7));
             gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
+
             gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 55));
-            gc.fillText("TROSEČNÍK", 230, 250);
-            gc.setFont(javafx.scene.text.Font.font("Arial", 25));
-            gc.fillText("Stiskni ENTER pro spuštění hry", 220, 400);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 75));
+            gc.fillText("TROSEČNÍK", 170, 250);
+
+            gc.setFill(Color.ORANGE);
+            gc.fillRect(250, 360, 300, 60);
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(3);
+            gc.strokeRect(250, 360, 300, 60);
+            gc.setLineWidth(1);
+
+            gc.setFill(Color.BLACK);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 24));
+            gc.fillText("Stiskni ENTER pro start", 265, 400);
+
+
+            gc.setFill(Color.GRAY);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 15));
             return;
         }
 
         if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
-            gc.setFill(Color.DARKRED);
+            gc.setFill(Color.rgb(40, 0, 0));
             gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
+
+            gc.setFill(Color.RED);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 80));
+            gc.fillText("ZEMŘEL JSI", 170, 280);
+
             gc.setFill(Color.WHITE);
-            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 65));
-            gc.fillText("ZEMŘEL JSI", 210, 300);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontPosture.ITALIC, 25));
+            gc.fillText("Ostrov si vyžádal další oběť...", 230, 340);
+
+            gc.setFill(Color.DARKGRAY);
+            gc.fillRect(250, 420, 300, 50);
+            gc.setStroke(Color.RED);
+            gc.setLineWidth(2);
+            gc.strokeRect(250, 420, 300, 50);
+            gc.setLineWidth(1);
+
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 20));
+            gc.fillText("Stiskni 'R' pro RESTART", 285, 452);
             return;
         }
 
@@ -564,6 +601,31 @@ public class App extends Application {
             }
         };
         typingTimer.start();
+    }
+    public void resetGame() {
+
+        if (timeThread != null) {
+            timeThread.stopTime();
+        }
+
+
+        gameMap = saveLoadManager.loadLevel("/trosecnik/levels/level1.txt");
+        player = new Player("Trosečník", 2, 1, gameMap);
+        domorodec = new trosecnik.model.NPC("Pátek", 8, 2, "Cizinče! Voda je zrádná. Najdi Liány a Dřevo, postav Vor a uteč!");
+        divocak = new trosecnik.model.NPC("Divoké prase", 2, 6, "");
+
+        isPaused = false;
+        showInventory = false;
+        activeHotbarSlot = 0;
+        craftSlot1 = null;
+        craftSlot2 = null;
+        fullDialogue = null;
+        if (typingTimer != null) typingTimer.stop();
+
+        timeThread = new TimeThread(player, () -> requestDraw());
+        timeThread.start();
+        gameStateManager.setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
+        requestDraw();
     }
 
     public boolean isPaused() { return isPaused; }
