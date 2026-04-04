@@ -13,6 +13,22 @@ import java.util.List;
 public class InputHandler {
 
     public void handleKeyPressed(KeyEvent event, App app, Player player, NPC domorodec, NPC divocak, GameMap gameMap) {
+
+        var state = app.getGameStateManager().getCurrentState();
+        var GameState = trosecnik.engine.GameStateManager.GameState.class;
+
+        if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU) {
+            if (event.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                app.getGameStateManager().setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
+                app.requestDraw();
+            }
+            return;
+        }
+
+        if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+            return;
+        }
+
         if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
             if (app.getFullDialogue() != null) {
                 app.setFullDialogue(null);
@@ -130,6 +146,10 @@ public class InputHandler {
     }
 
     public void handleMouseClicked(MouseEvent event, App app, Player player, NPC divocak, GameMap gameMap, SaveLoadManager saveLoadManager, javafx.stage.Stage primaryStage) {
+        var state = app.getGameStateManager().getCurrentState();
+        if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU || state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+            return;
+        }
         if (app.isPaused()) {
             double px = event.getX();
             double py = event.getY();

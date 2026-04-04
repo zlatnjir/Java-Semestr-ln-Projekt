@@ -72,6 +72,19 @@ public class App extends Application {
         var gameLoopTimer = new javafx.animation.AnimationTimer() {
             @Override
             public void handle(long now) {
+
+                if (player != null && player.getHealth() <= 0) {
+                    if (gameStateManager.getCurrentState() != trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+                        gameStateManager.setState(trosecnik.engine.GameStateManager.GameState.GAME_OVER);
+                        drawGame(gc);
+                    }
+                    return;
+                }
+
+                if (gameStateManager.getCurrentState() != trosecnik.engine.GameStateManager.GameState.PLAYING) {
+                    return;
+                }
+
                 if (!isPaused && divocak != null && divocak.getHealth() > 0) {
                     int pDx = player.getX() - divocak.getX();
                     int pDy = player.getY() - divocak.getY();
@@ -146,6 +159,27 @@ public class App extends Application {
     }
 
     private void drawGame(GraphicsContext gc) {
+        var state = gameStateManager.getCurrentState();
+        if (state == trosecnik.engine.GameStateManager.GameState.MAIN_MENU) {
+            gc.setFill(Color.rgb(20, 20, 50));
+            gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 55));
+            gc.fillText("TROSEČNÍK", 230, 250);
+            gc.setFont(javafx.scene.text.Font.font("Arial", 25));
+            gc.fillText("Stiskni ENTER pro spuštění hry", 220, 400);
+            return;
+        }
+
+        if (state == trosecnik.engine.GameStateManager.GameState.GAME_OVER) {
+            gc.setFill(Color.DARKRED);
+            gc.fillRect(0, 0, 10 * TILE_SIZE, 8 * TILE_SIZE);
+            gc.setFill(Color.WHITE);
+            gc.setFont(javafx.scene.text.Font.font("Arial", javafx.scene.text.FontWeight.BOLD, 65));
+            gc.fillText("ZEMŘEL JSI", 210, 300);
+            return;
+        }
+
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 10; x++) {
                 char tile = gameMap.getTile(x, y);
@@ -546,4 +580,5 @@ public class App extends Application {
     public trosecnik.inventory.Item getCraftSlot2() { return craftSlot2; }
     public void setCraftSlot2(trosecnik.inventory.Item craftSlot2) { this.craftSlot2 = craftSlot2; }
     public TimeThread getTimeThread() { return timeThread; }
+    public trosecnik.engine.GameStateManager getGameStateManager() { return gameStateManager; }
 }
