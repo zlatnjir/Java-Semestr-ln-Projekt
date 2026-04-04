@@ -169,36 +169,51 @@ public class App extends Application {
                 return;
             }
             else if (event.getCode() == javafx.scene.input.KeyCode.E) {
-                player.interact();
+                java.util.List<trosecnik.inventory.Item> items = player.getInventory().getItems();
+                trosecnik.inventory.Item activeItem = null;
+                if (activeHotbarSlot < items.size()) {
+                    activeItem = items.get(activeHotbarSlot);
+                }
 
-                if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
-                    fullDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
-                    visibleChars = 0;
-                    lastTypingTick = 0;
-                    if (typingTimer != null) typingTimer.stop();
+                if (activeItem != null && activeItem.getType().equals("Jídlo")) {
+                    if (activeItem.getName().equals("Pečené maso")) {
+                        player.setHunger(player.getHunger() + 50);
+                        System.out.println("Mňam! Snědl jsi Pečené maso (+50 Hlad).");
+                    } else if (activeItem.getName().equals("Syrové maso")) {
+                        player.setHunger(player.getHunger() + 15);
+                        System.out.println("Fuj! Snědl jsi Syrové maso (+15 Hlad).");
+                    }
+                    if (player.getHunger() > 100) player.setHunger(100);
 
-                    typingTimer = new javafx.animation.AnimationTimer() {
-                        @Override
-                        public void handle(long now) {
-                            if (fullDialogue != null && visibleChars < fullDialogue.length()) {
-                                if (now - lastTypingTick > 50_000_000) {
-                                    visibleChars++;
-                                    lastTypingTick = now;
-                                    drawGame(gc);
+                    player.getInventory().removeItem(activeItem);
+                }
+                else {
+                    player.interact();
+
+                    if (domorodec != null && Math.abs(player.getX() - domorodec.getX()) <= 1 && Math.abs(player.getY() - domorodec.getY()) <= 1) {
+                        fullDialogue = domorodec.getName() + ": " + domorodec.getDialogueMessage();
+                        visibleChars = 0;
+                        lastTypingTick = 0;
+                        if (typingTimer != null) typingTimer.stop();
+
+                        typingTimer = new javafx.animation.AnimationTimer() {
+                            @Override
+                            public void handle(long now) {
+                                if (fullDialogue != null && visibleChars < fullDialogue.length()) {
+                                    if (now - lastTypingTick > 50_000_000) {
+                                        visibleChars++;
+                                        lastTypingTick = now;
+                                        drawGame(gc);
+                                    }
+                                } else {
+                                    this.stop();
                                 }
-                            } else {
-                                this.stop();
                             }
-                        }
-                    };
-                    typingTimer.start();
+                        };
+                        typingTimer.start();
+                    }
                 }
             }
-            else if (event.getCode() == javafx.scene.input.KeyCode.R) {
-                player.eatFood();
-            }
-
-            drawGame(gc);
         });
         scene.setOnMouseClicked(event -> {
             if (isPaused) {
