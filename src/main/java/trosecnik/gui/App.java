@@ -154,8 +154,9 @@ public class App extends Application {
         primaryStage.setResizable(false);
         primaryStage.show();
 
-        timeThread = new TimeThread(player, () -> drawGame(gc));
+        timeThread = new TimeThread(player, () -> javafx.application.Platform.runLater(() -> requestDraw()));
         timeThread.start();
+        timeThread.setPaused(true);
     }
 
     private void drawGame(GraphicsContext gc) {
@@ -621,9 +622,9 @@ public class App extends Application {
         fullDialogue = null;
         if (typingTimer != null) typingTimer.stop();
 
-        timeThread = new TimeThread(player, () -> requestDraw());
+        timeThread = new TimeThread(player, () -> javafx.application.Platform.runLater(() -> requestDraw()));
         timeThread.start();
-        timeThread.setPaused(true);
+        timeThread.setPaused(false);
         gameStateManager.setState(trosecnik.engine.GameStateManager.GameState.PLAYING);
         requestDraw();
     }

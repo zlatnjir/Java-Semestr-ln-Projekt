@@ -138,6 +138,7 @@ public class InputHandler {
                     app.startDialogue(domorodec);
                 }
             }
+            app.requestDraw();
         }
     }
 
