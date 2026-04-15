@@ -217,9 +217,15 @@ public class App extends Application {
             return;
         }
 
+        camera.update(player, gameMap);
+        int offX = camera.getOffsetX();
+        int offY = camera.getOffsetY();
+
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 10; x++) {
-                char tile = gameMap.getTile(x, y);
+                int mapX = offX + x;
+                int mapY = offY + y;
+                char tile = gameMap.getTile(mapX, mapY);
 
                 if (tile == '~') {
                     gc.setFill(Color.BLUE);
@@ -231,7 +237,7 @@ public class App extends Application {
                     gc.setFill(Color.DARKGREEN);
                     gc.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
-                    int hp = gameMap.getTreeHealth(x, y);
+                    int hp = gameMap.getTreeHealth(mapX, mapY);
                     if (hp < 3) {
                         gc.setFill(Color.RED);
                         gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, 50, 5);
@@ -257,7 +263,7 @@ public class App extends Application {
                     gc.setFill(Color.PINK);
                     gc.fillRoundRect(x * TILE_SIZE + 10, y * TILE_SIZE + 20, 60, 40, 15, 15);
 
-                    int hp = gameMap.getPigHealth(x, y);
+                    int hp = gameMap.getPigHealth(mapX, mapY);
                     if (hp < 50) {
                         gc.setFill(Color.RED);
                         gc.fillRect(x * TILE_SIZE + 15, y * TILE_SIZE + 5, 50, 5);
@@ -269,24 +275,24 @@ public class App extends Application {
         }
 
         gc.setFill(Color.RED);
-        gc.fillOval(player.getX() * TILE_SIZE, player.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        gc.fillOval((player.getX() - offX) * TILE_SIZE, (player.getY() - offY) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
         if (domorodec != null) {
             gc.setFill(Color.YELLOW);
-            gc.fillOval(domorodec.getX() * TILE_SIZE, domorodec.getY() * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            gc.fillOval((domorodec.getX() - offX) * TILE_SIZE, (domorodec.getY() - offY) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
             gc.setFill(Color.WHITE);
             gc.setFont(javafx.scene.text.Font.font("Arial", 14));
-            gc.fillText(domorodec.getName(), domorodec.getX() * TILE_SIZE + 20, domorodec.getY() * TILE_SIZE - 5);
+            gc.fillText(domorodec.getName(), (domorodec.getX() - offX) * TILE_SIZE + 20, (domorodec.getY() - offY) * TILE_SIZE - 5);
         }
 
         if (divocak != null && divocak.getHealth() > 0) {
             gc.setFill(Color.PURPLE);
-            gc.fillRoundRect(divocak.getX() * TILE_SIZE + 10, divocak.getY() * TILE_SIZE + 20, 60, 40, 20, 20);
+            gc.fillRoundRect((divocak.getX() - offX) * TILE_SIZE + 10, (divocak.getY() - offY) * TILE_SIZE + 20, 60, 40, 20, 20);
 
             gc.setFill(Color.RED);
-            gc.fillRect(divocak.getX() * TILE_SIZE + 15, divocak.getY() * TILE_SIZE + 5, 50, 5);
+            gc.fillRect((divocak.getX() - offX) * TILE_SIZE + 15, (divocak.getY() - offY) * TILE_SIZE + 5, 50, 5);
             gc.setFill(Color.LIGHTGREEN);
-            gc.fillRect(divocak.getX() * TILE_SIZE + 15, divocak.getY() * TILE_SIZE + 5, divocak.getHealth(), 5);
+            gc.fillRect((divocak.getX() - offX) * TILE_SIZE + 15, (divocak.getY() - offY) * TILE_SIZE + 5, divocak.getHealth(), 5);
         }
 
         gc.setFill(Color.WHITE);
@@ -644,4 +650,5 @@ public class App extends Application {
     public void setCraftSlot2(trosecnik.inventory.Item craftSlot2) { this.craftSlot2 = craftSlot2; }
     public TimeThread getTimeThread() { return timeThread; }
     public trosecnik.engine.GameStateManager getGameStateManager() { return gameStateManager; }
+    public trosecnik.engine.Camera getCamera() { return camera; }
 }

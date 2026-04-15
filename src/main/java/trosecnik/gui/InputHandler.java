@@ -210,10 +210,10 @@ public class InputHandler {
         }
 
         int TILE_SIZE = 80;
-        int gridX = (int) (event.getX() / TILE_SIZE);
-        int gridY = (int) (event.getY() / TILE_SIZE);
+        int gridX = (int) (event.getX() / TILE_SIZE) + app.getCamera().getOffsetX();
+        int gridY = (int) (event.getY() / TILE_SIZE) + app.getCamera().getOffsetY();
 
-        if (!app.isShowInventory() && gridX >= 0 && gridX < 10 && gridY >= 0 && gridY < 8) {
+        if (!app.isShowInventory() && gridX >= 0 && gridX < gameMap.getWidth() && gridY >= 0 && gridY < gameMap.getHeight()) {
             double distance = Math.hypot(player.getX() - gridX, player.getY() - gridY);
             List<trosecnik.inventory.Item> items = player.getInventory().getItems();
             String activeItemName = (app.getActiveHotbarSlot() < items.size()) ? items.get(app.getActiveHotbarSlot()).name() : "Ruce";
